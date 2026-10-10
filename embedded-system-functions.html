@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Embedded System: Block Diagram and Functions</title>
+<style>
+:root{--bg:#f3f7f9;--ink:#10252e;--muted:#4d6670;--card:#fff;--line:#c9d8de;--teal:#0b6b78;--amber:#e39a1b;--blue:#dcecf1}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Georgia,"Times New Roman",serif;line-height:1.6}
+main{max-width:900px;margin:0 auto;padding:32px 18px 56px}
+h1{font-size:2rem;margin:0 0 6px;line-height:1.2}
+h2{font-size:1.3rem;margin:36px 0 10px}
+p.lead{color:var(--muted);margin:0 0 20px;max-width:65ch}
+.diagram{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:12px;overflow-x:auto}
+svg{width:100%;min-width:640px;height:auto;display:block}
+.blk rect{fill:var(--blue);stroke:var(--teal);stroke-width:1.5;cursor:pointer}
+.blk.core rect{fill:var(--teal)}
+.blk.core text{fill:#fff}
+.blk text{font:600 14px system-ui,sans-serif;fill:var(--ink);pointer-events:none}
+.blk:hover rect,.blk:focus rect,.blk.on rect{stroke:var(--amber);stroke-width:3}
+.blk:focus{outline:none}
+.arrow{stroke:var(--ink);stroke-width:1.8;fill:none;marker-end:url(#ah)}
+.lbl{font:12px system-ui,sans-serif;fill:var(--muted)}
+#info{margin-top:12px;padding:12px 14px;border-left:4px solid var(--amber);background:#fff7e8;font-family:system-ui,sans-serif;font-size:.95rem;min-height:3.2em}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px}
+.fn{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:14px 16px}
+.fn h3{margin:0 0 4px;font:700 1rem system-ui,sans-serif;color:var(--teal)}
+.fn p{margin:0;font-size:.95rem}
+.flow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-family:system-ui,sans-serif;font-size:.9rem}
+.flow span{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:6px 10px}
+.flow b{color:var(--amber)}
+table{width:100%;border-collapse:collapse;background:var(--card);font-family:system-ui,sans-serif;font-size:.9rem}
+th,td{border:1px solid var(--line);padding:8px 10px;text-align:left}
+th{background:var(--blue)}
+.scroll{overflow-x:auto}
+@media (prefers-reduced-motion:no-preference){.blk rect{transition:stroke .15s}}
+</style>
+</head>
+<body>
+<main>
+<h1>Embedded System: Block Diagram and Functions</h1>
+<p class="lead">An embedded system is a small computer built into a device to do one dedicated task. Select any block in the diagram to see what it does.</p>
+
+<div class="diagram">
+<svg viewBox="0 0 760 360" role="img" aria-label="Block diagram of an embedded system">
+<defs><marker id="ah" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0,0 L10,4 L0,8 z" fill="#10252e"/></marker></defs>
+
+<g class="blk" tabindex="0" data-k="sensor"><rect x="20" y="40" width="130" height="60" rx="6"/><text x="85" y="76" text-anchor="middle">Sensors</text></g>
+<g class="blk" tabindex="0" data-k="adc"><rect x="20" y="150" width="130" height="60" rx="6"/><text x="85" y="186" text-anchor="middle">ADC / Input</text></g>
+
+<g class="blk core" tabindex="0" data-k="cpu"><rect x="260" y="90" width="240" height="130" rx="8"/><text x="380" y="140" text-anchor="middle">Microcontroller</text><text x="380" y="164" text-anchor="middle" style="font-weight:400;font-size:12px">CPU + Firmware logic</text></g>
+
+<g class="blk" tabindex="0" data-k="mem"><rect x="260" y="250" width="110" height="50" rx="6"/><text x="315" y="280" text-anchor="middle">Memory</text></g>
+<g class="blk" tabindex="0" data-k="clock"><rect x="390" y="250" width="110" height="50" rx="6"/><text x="445" y="280" text-anchor="middle">Clock</text></g>
+
+<g class="blk" tabindex="0" data-k="dac"><rect x="610" y="40" width="130" height="60" rx="6"/><text x="675" y="76" text-anchor="middle">DAC / Output</text></g>
+<g class="blk" tabindex="0" data-k="act"><rect x="610" y="150" width="130" height="60" rx="6"/><text x="675" y="186" text-anchor="middle">Actuators</text></g>
+<g class="blk" tabindex="0" data-k="comm"><rect x="610" y="250" width="130" height="50" rx="6"/><text x="675" y="280" text-anchor="middle">Communication</text></g>
+<g class="blk" tabindex="0" data-k="pwr"><rect x="20" y="250" width="130" height="50" rx="6"/><text x="85" y="280" text-anchor="middle">Power supply</text></g>
+
+<path class="arrow" d="M85 100 V150"/>
+<path class="arrow" d="M150 180 H260"/>
+<path class="arrow" d="M500 130 H555 V70 H610"/>
+<path class="arrow" d="M610 180 H555 V160 H500" style="marker-end:none"/>
+<path class="arrow" d="M500 160 H555 V180 H610"/>
+<path class="arrow" d="M370 220 V250" style="marker-end:none"/>
+<path class="arrow" d="M500 200 H560 V275 H610" />
+<path class="arrow" d="M150 275 H255" style="stroke-dasharray:5 4"/>
+<text class="lbl" x="170" y="168">digital data</text>
+<text class="lbl" x="525" y="118">control</text>
+<text class="lbl" x="165" y="266">supplies all blocks</text>
+</svg>
+</div>
+<div id="info">Select a block to read its function.</div>
+
+<h2>Main functions of an embedded system</h2>
+<div class="grid">
+<div class="fn"><h3>Sensing</h3><p>Reads real-world inputs such as temperature, light, motion or pressure through sensors.</p></div>
+<div class="fn"><h3>Processing</h3><p>The microcontroller runs the firmware, compares inputs against set conditions and decides what to do.</p></div>
+<div class="fn"><h3>Control</h3><p>Drives motors, relays, LEDs and displays so the device responds to what was sensed.</p></div>
+<div class="fn"><h3>Real-time response</h3><p>Completes each task within a fixed time limit, for example an airbag firing in milliseconds.</p></div>
+<div class="fn"><h3>Data storage</h3><p>Keeps the program in Flash/ROM and working data in RAM, plus logs if needed.</p></div>
+<div class="fn"><h3>Communication</h3><p>Exchanges data with other devices using UART, SPI, I2C, Wi-Fi or Bluetooth.</p></div>
+<div class="fn"><h3>Monitoring and safety</h3><p>Watches for faults, uses watchdog timers to recover from hangs, and saves power in sleep modes.</p></div>
+</div>
+
+<h2>Working cycle</h2>
+<div class="flow"><span>Sense</span><b>&rarr;</b><span>Convert (ADC)</span><b>&rarr;</b><span>Process</span><b>&rarr;</b><span>Decide</span><b>&rarr;</b><span>Act</span><b>&rarr;</b><span>Repeat</span></div>
+
+<h2>Example: automatic room heater</h2>
+<div class="scroll"><table>
+<tr><th>Block</th><th>Role in the heater</th></tr>
+<tr><td>Sensor</td><td>Temperature sensor measures room temperature</td></tr>
+<tr><td>Microcontroller</td><td>Compares reading with the set value</td></tr>
+<tr><td>Actuator</td><td>Relay switches the heating coil on or off</td></tr>
+<tr><td>Display</td><td>Shows current and set temperature</td></tr>
+</table></div>
+</main>
+
+<script>
+var T={
+sensor:"Sensors convert physical quantities (temperature, light, pressure, motion) into electrical signals.",
+adc:"The ADC converts analog sensor signals into digital numbers the processor can read. Digital inputs such as buttons also enter here.",
+cpu:"The microcontroller executes the firmware. It reads inputs, applies the program logic and sends commands to outputs.",
+mem:"Flash/ROM holds the program permanently. RAM holds temporary variables while the program runs.",
+clock:"The clock or oscillator gives timing pulses that keep the processor and peripherals in step. Timers use it for delays and real-time deadlines.",
+dac:"The DAC or output driver turns digital values into analog levels or higher-current signals for output devices.",
+act:"Actuators perform the physical action: motors turn, relays switch, LEDs glow, buzzers sound, displays update.",
+comm:"Communication interfaces (UART, SPI, I2C, Wi-Fi, Bluetooth) link the system to other devices, networks or the cloud.",
+pwr:"The power supply or battery gives regulated voltage to every block. Low power design extends battery life."
+};
+var info=document.getElementById("info"),bl=document.querySelectorAll(".blk");
+function show(g){bl.forEach(function(b){b.classList.remove("on")});g.classList.add("on");info.textContent=T[g.dataset.k]}
+bl.forEach(function(g){g.addEventListener("click",function(){show(g)});g.addEventListener("keydown",function(e){if(e.key==="Enter"||e.key===" "){e.preventDefault();show(g)}})});
+</script>
+</body>
+</html>

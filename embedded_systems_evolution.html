@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Why Embedded Systems? - Ceiling Fan Evolution</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#f0f9ff',
+              100: '#e0f2fe',
+              400: '#38bdf8',
+              500: '#0284c7',
+              600: '#0284c7',
+              900: '#0c4a6e',
+            },
+            accent: {
+              cyan: '#06b6d4',
+              emerald: '#10b981',
+              amber: '#f59e0b',
+              purple: '#8b5cf6',
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Custom Styling & Glassmorphism */
+    body {
+      background-color: #0b1120;
+      color: #f1f5f9;
+      font-family: 'Inter', sans-serif;
+    }
+    
+    .glass-card {
+      background: rgba(15, 23, 42, 0.75);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 1rem;
+    }
+
+    .glass-card-active {
+      border-color: rgba(56, 189, 248, 0.4);
+      box-shadow: 0 0 25px -5px rgba(2, 132, 199, 0.25);
+    }
+
+    /* Fan Spinning Keyframe Dynamically Updated via JS or CSS Variable */
+    @keyframes spin-fan {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    .spinning-blades {
+      transform-origin: center center;
+      animation: spin-fan var(--spin-duration, 0s) linear infinite;
+    }
+
+    /* Airflow Animation Lines */
+    @keyframes flow-down {
+      0% { opacity: 0; transform: translateY(-10px) scaleX(0.8); }
+      50% { opacity: 0.8; }
+      100% { opacity: 0; transform: translateY(40px) scaleX(1.2); }
+    }
+
+    .breeze-line {
+      animation: flow-down var(--breeze-speed, 1.5s) ease-in-out infinite;
+    }
+
+    .breeze-delay-1 { animation-delay: 0.2s; }
+    .breeze-delay-2 { animation-delay: 0.5s; }
+    .breeze-delay-3 { animation-delay: 0.8s; }
+
+    /* IR Wave Animation */
+    @keyframes ir-beam {
+      0% { opacity: 1; transform: scale(0.5); }
+      100% { opacity: 0; transform: scale(2.5); }
+    }
+
+    .ir-pulse {
+      animation: ir-beam 0.6s ease-out infinite;
+    }
+
+    /* Custom Knob Control Styles */
+    .knob-tick {
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Signal Flow Active Pulse */
+    @keyframes signal-flow {
+      0% { stroke-dashoffset: 20; }
+      100% { stroke-dashoffset: 0; }
+    }
+
+    .active-flow {
+      stroke-dasharray: 6, 6;
+      animation: signal-flow 0.8s linear infinite;
+    }
+  </style>
+</head>
+<body class="min-h-screen pb-12">
+
+  <header class="border-b border-slate-800 bg-slate-900/80 sticky top-0 z-50 backdrop-blur-md">
+    <div class="max-w-7xl mx-mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row justify-between items-center gap-4">
+      <div class="flex items-center space-x-3">
+        <div class="p-2.5 bg-gradient-to-tr from-sky-500 to-indigo-600 rounded-xl shadow-lg shadow-sky-500/20">
+          <i class="fa-solid fa-microchip text-xl text-white"></i>
+        </div>
+        <div>
+          <h1 class="text-xl font-bold text-white tracking-tight">Why Embedded Systems?</h1>
+          <p class="text-xs text-sky-400 font-mono">The Evolution of an Appliance: Ceiling Fan Control</p>
+        </div>
+      </div>
+
+      <!-- Stage Selector Tabs -->
+      <nav class="flex p-1 bg-slate-950/80 rounded-xl border border-slate-800 text-xs sm:text-sm font-medium overflow-x-auto max-w-full">
+        <button onclick="selectStage(1)" id="tab-1" class="stage-tab px-3 py-2 rounded-lg transition-all flex items-center space-x-2 whitespace-nowrap">
+          <span class="w-5 h-5 rounded-full bg-slate-800 flex items-center justify-center font-mono text-xs">1</span>
+          <span>No Microcontroller</span>
+        </button>
+        <button onclick="selectStage(2)" id="tab-2" class="stage-tab px-3 py-2 rounded-lg transition-all flex items-center space-x-2 whitespace-nowrap">
+          <span class="w-5 h-5 rounded-full bg-slate-800 flex items-center justify-center font-mono text-xs">2</span>
+          <span>Manual Regulator</span>
+        </button>
+        <button onclick="selectStage(3)" id="tab-3" class="stage-tab px-3 py-2 rounded-lg transition-all flex items-center space-x-2 whitespace-nowrap">
+          <span class="w-5 h-5 rounded-full bg-slate-800 flex items-center justify-center font-mono text-xs">3</span>
+          <span>IR Remote MCU</span>
+        </button>
+        <button onclick="selectStage(4)" id="tab-4" class="stage-tab px-3 py-2 rounded-lg transition-all flex items-center space-x-2 whitespace-nowrap">
+          <span class="w-5 h-5 rounded-full bg-slate-800 flex items-center justify-center font-mono text-xs">4</span>
+          <span>Smart IoT System</span>
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+    <section class="lg:col-span-7 flex flex-col gap-6">
+      
+      <!-- Interactive Fan Viewer Canvas Card -->
+      <div class="glass-card p-6 flex flex-col items-center justify-between relative overflow-hidden min-h-[440px]">
+        
+        <!-- Header status info bar -->
+        <div class="w-full flex justify-between items-center z-10 border-b border-slate-800/80 pb-3">
+          <div class="flex items-center space-x-2">
+            <span id="stage-badge" class="px-2.5 py-1 rounded-full text-xs font-semibold bg-sky-500/20 text-sky-400 border border-sky-500/30">
+              Stage 1
+            </span>
+            <span id="system-architecture-tag" class="text-xs text-slate-400 font-mono">Direct Electrical Line</span>
+          </div>
+
+          <div class="flex items-center space-x-4 font-mono text-xs">
+            <div class="flex items-center space-x-1">
+              <span class="text-slate-400">Power:</span>
+              <span id="power-value" class="text-white font-bold">0 W</span>
+            </div>
+            <div class="flex items-center space-x-1">
+              <span class="text-slate-400">RPM:</span>
+              <span id="rpm-value" class="text-sky-400 font-bold">0</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Ceiling Fan Visual Area -->
+        <div class="relative my-8 flex flex-col items-center justify-center w-full">
+          
+          <!-- Ceiling Mount Rod -->
+          <div class="w-3 h-16 bg-gradient-to-r from-slate-600 via-slate-400 to-slate-700 rounded-t-sm shadow-inner z-0"></div>
+
+          <!-- Fan Body & Blades Container -->
+          <div class="relative z-10 w-64 h-64 flex items-center justify-center">
+            
+            <!-- Fan Motor Housing SVG with SVG Blades -->
+            <svg id="fan-svg" class="w-64 h-64 overflow-visible" viewBox="0 0 200 200">
+              <!-- Blades Group (Rotated via CSS variable) -->
+              <g id="fan-blades" class="spinning-blades" style="--spin-duration: 0s;">
+                <!-- Blade 1 -->
+                <path d="M 100 85 C 92 40, 88 10, 100 5 C 112 10, 108 40, 100 85 Z" fill="url(#blade-grad)" stroke="#1e293b" stroke-width="1.5" />
+                <!-- Blade 2 -->
+                <path d="M 115 100 C 160 92, 190 88, 195 100 C 190 112, 160 108, 115 100 Z" fill="url(#blade-grad)" stroke="#1e293b" stroke-width="1.5" />
+                <!-- Blade 3 -->
+                <path d="M 100 115 C 108 160, 112 190, 100 195 C 88 190, 92 160, 100 115 Z" fill="url(#blade-grad)" stroke="#1e293b" stroke-width="1.5" />
+                <!-- Blade 4 -->
+                <path d="M 85 100 C 40 108, 10 112, 5 100 C 10 88, 40 92, 85 100 Z" fill="url(#blade-grad)" stroke="#1e293b" stroke-width="1.5" />
+              </g>
+
+              <!-- Gradient Definitions -->
+              <defs>
+                <linearGradient id="blade-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#38bdf8" />
+                  <stop offset="100%" stop-color="#0284c7" />
+                </linearGradient>
+                <radialGradient id="hub-grad" cx="50%" cy="50%" r="50%">
+                  <stop offset="0%" stop-color="#f8fafc" />
+                  <stop offset="70%" stop-color="#64748b" />
+                  <stop offset="100%" stop-color="#334155" />
+                </radialGradient>
+              </defs>
+
+              <!-- Central Motor Canopy -->
+              <circle cx="100" cy="100" r="24" fill="url(#hub-grad)" stroke="#0f172a" stroke-width="3" shadow="drop-shadow(0 4px 6px rgba(0,0,0,0.5))" />
+              <!-- Status LED on Hub -->
+              <circle id="status-led" cx="100" cy="100" r="4" fill="#ef4444" class="transition-colors duration-300" />
+            </svg>
+
+            <!-- IR Signal Beam Indicator (Visible in Stage 3) -->
+            <div id="ir-beam-indicator" class="hidden absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 border-2 border-red-500 rounded-full ir-pulse pointer-events-none"></div>
+          </div>
+
+          <!-- Airflow Visualizer Breeze Lines -->
+          <div id="airflow-container" class="mt-4 flex justify-center space-x-8 opacity-0 transition-opacity duration-500 w-48">
+            <div class="w-1 h-8 bg-sky-400/40 rounded-full breeze-line"></div>
+            <div class="w-1.5 h-12 bg-sky-300/50 rounded-full breeze-line breeze-delay-1"></div>
+            <div class="w-1 h-10 bg-sky-400/40 rounded-full breeze-line breeze-delay-2"></div>
+            <div class="w-1.5 h-12 bg-sky-300/50 rounded-full breeze-line breeze-delay-3"></div>
+          </div>
+        </div>
+
+        <!-- System Logic Active Feedback Footer -->
+        <div class="w-full bg-slate-950/60 rounded-xl p-3 border border-slate-800 flex items-center justify-between text-xs">
+          <div class="flex items-center space-x-2 text-slate-300">
+            <i class="fa-solid fa-circle-info text-sky-400"></i>
+            <span id="system-status-text">Direct AC voltage connection. No logic processing available.</span>
+          </div>
+          <div id="temperature-badge" class="hidden flex items-center space-x-1.5 text-amber-400 font-mono bg-amber-500/10 px-2 py-1 rounded border border-amber-500/20">
+            <i class="fa-solid fa-temperature-half"></i>
+            <span id="temp-display">28°C</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="glass-card p-5">
+        <h3 class="text-xs font-mono font-bold uppercase tracking-wider text-slate-400 mb-4 flex items-center justify-between">
+          <span>Signal & System Architecture Block Flow</span>
+          <span class="text-[10px] text-sky-400 font-normal">Interactive Dynamic Pathways</span>
+        </h3>
+
+        <!-- Dynamic Block Diagrams -->
+        <div id="block-diagram-container" class="w-full overflow-x-auto py-2">
+          <!-- Rendered via JS based on current stage -->
+        </div>
+      </div>
+
+    </section>
+
+    <section class="lg:col-span-5 flex flex-col gap-6">
+
+      <!-- Interactive Hardware Interface Switcher -->
+      <div class="glass-card p-6 flex flex-col min-h-[440px]">
+        <div class="border-b border-slate-800 pb-3 mb-5 flex justify-between items-center">
+          <h2 class="text-base font-bold text-white flex items-center gap-2">
+            <i id="stage-icon" class="fa-solid fa-toggle-on text-sky-400"></i>
+            <span id="control-panel-title">Stage 1 Controls: Wall Switch</span>
+          </h2>
+          <span class="text-xs font-mono text-slate-400">User Interface</span>
+        </div>
+
+        <!-- CONTROLS CONTAINER FOR ALL 4 STAGES -->
+        <div class="flex-grow flex flex-col justify-center items-center">
+          
+          <!-- STAGE 1: SIMPLE WALL SWITCH -->
+          <div id="control-stage-1" class="stage-control-panel w-full flex flex-col items-center justify-center py-6">
+            <div class="w-32 h-52 bg-slate-200 rounded-2xl p-4 shadow-xl border-4 border-slate-300 flex flex-col items-center justify-between">
+              <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest font-mono">AC SWITCH</span>
+              
+              <!-- Toggle Switch -->
+              <button onclick="toggleStage1Switch()" id="wall-switch" class="w-16 h-28 bg-slate-300 rounded-lg border-2 border-slate-400 p-1 flex flex-col justify-between shadow-inner transition-all duration-200">
+                <div id="switch-lever" class="w-full h-12 bg-white rounded shadow-md border border-slate-300 transition-all duration-200 flex items-center justify-center">
+                  <div class="w-6 h-1 bg-slate-300 rounded-full"></div>
+                </div>
+              </button>
+
+              <span id="switch-state-label" class="text-xs font-bold text-red-600 font-mono">OFF</span>
+            </div>
+            <p class="text-xs text-slate-400 text-center mt-6 max-w-xs">
+              Direct AC line connection. Gives binary control only (0% or 100% speed). No regulation available.
+            </p>
+          </div>
+
+          <!-- STAGE 2: ROTARY REGULATOR -->
+          <div id="control-stage-2" class="stage-control-panel hidden w-full flex flex-col items-center justify-center py-4">
+            <div class="w-56 h-64 bg-slate-900 rounded-2xl p-5 border border-slate-800 flex flex-col items-center justify-between shadow-2xl relative">
+              <div class="w-full flex justify-between items-center text-xs font-mono text-slate-400">
+                <span>RHEOSTAT / TRIAC</span>
+                <span class="text-sky-400 font-bold">MANUAL KNOB</span>
+              </div>
+
+              <!-- Rotary Dial Container -->
+              <div class="relative w-36 h-36 flex items-center justify-center">
+                <!-- Speed Marks -->
+                <div class="absolute inset-0 rounded-full border-2 border-dashed border-slate-700"></div>
+                
+                <!-- Knob Component -->
+                <div id="rotary-knob" class="w-28 h-28 rounded-full bg-gradient-to-tr from-slate-800 to-slate-700 border-4 border-slate-600 shadow-2xl flex items-center justify-center cursor-pointer transition-transform duration-300 relative">
+                  <div class="absolute top-2 w-2 h-6 bg-sky-400 rounded-full shadow-lg"></div>
+                  <div class="w-12 h-12 rounded-full bg-slate-900 border border-slate-700 flex items-center justify-center">
+                    <span id="regulator-speed-num" class="text-lg font-bold font-mono text-white">0</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Speed Step Selector Buttons -->
+              <div class="flex justify-between w-full px-2 gap-1">
+                <button onclick="setRegulatorSpeed(0)" class="px-2 py-1 bg-slate-800 hover:bg-slate-700 rounded text-xs font-mono text-slate-300">0</button>
+                <button onclick="setRegulatorSpeed(1)" class="px-2 py-1 bg-slate-800 hover:bg-slate-700 rounded text-xs font-mono text-slate-300">1</button>
+                <button onclick="setRegulatorSpeed(2)" class="px-2 py-1 bg-slate-800 hover:bg-slate-700 rounded text-xs font-mono text-slate-300">2</button>
+                <button onclick="setRegulatorSpeed(3)" class="px-2 py-1 bg-slate-800 hover:bg-slate-700 rounded text-xs font-mono text-slate-300">3</button>
+                <button onclick="setRegulatorSpeed(4)" class="px-2 py-1 bg-slate-800 hover:bg-slate-700 rounded text-xs font-mono text-slate-300">4</button>
+                <button onclick="setRegulatorSpeed(5)" class="px-2 py-1 bg-slate-800 hover:bg-slate-700 rounded text-xs font-mono text-slate-300">5</button>
+              </div>
+            </div>
+            <p class="text-xs text-slate-400 text-center mt-4 max-w-xs">
+              Adjusts voltage dropping or phase angle manually. Low speeds waste energy as heat (in older resistor types). No microchip logic.
+            </p>
+          </div>
+
+          <!-- STAGE 3: IR REMOTE CONTROL -->
+          <div id="control-stage-3" class="stage-control-panel hidden w-full flex flex-col items-center justify-center py-2">
+            <div class="w-48 bg-slate-900 rounded-3xl p-5 border-2 border-slate-700 flex flex-col items-center gap-4 shadow-2xl relative">
+              <!-- IR Transmitter LED Top -->
+              <div class="w-3 h-3 bg-red-600/60 rounded-full border border-red-500 shadow-md shadow-red-500/50"></div>
+              
+              <div class="text-[10px] font-mono text-slate-400 tracking-wider">IR REMOTE CONTROL</div>
+
+              <!-- Remote Power Button -->
+              <button onclick="pressIRRemotePower()" class="w-12 h-12 rounded-full bg-red-600/20 text-red-400 border border-red-500/40 hover:bg-red-600 hover:text-white transition-all flex items-center justify-center font-bold text-lg shadow-lg">
+                <i class="fa-solid fa-power-off"></i>
+              </button>
+
+              <!-- Speed Increment / Decrement Grid -->
+              <div class="grid grid-cols-2 gap-3 w-full">
+                <button onclick="adjustIRSpeed(1)" class="p-3 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl text-sky-400 font-bold flex flex-col items-center text-xs gap-1">
+                  <i class="fa-solid fa-plus"></i>
+                  <span>SPEED</span>
+                </button>
+                <button onclick="adjustIRSpeed(-1)" class="p-3 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl text-sky-400 font-bold flex flex-col items-center text-xs gap-1">
+                  <i class="fa-solid fa-minus"></i>
+                  <span>SPEED</span>
+                </button>
+              </div>
+
+              <!-- Preset Speed Quick Buttons -->
+              <div class="grid grid-cols-3 gap-2 w-full text-xs font-mono">
+                <button onclick="setIRSpeed(1)" class="p-2 bg-slate-800 hover:bg-sky-600/30 rounded-lg text-slate-300">P1</button>
+                <button onclick="setIRSpeed(3)" class="p-2 bg-slate-800 hover:bg-sky-600/30 rounded-lg text-slate-300">P3</button>
+                <button onclick="setIRSpeed(5)" class="p-2 bg-slate-800 hover:bg-sky-600/30 rounded-lg text-slate-300">MAX</button>
+              </div>
+            </div>
+            <p class="text-xs text-slate-400 text-center mt-3 max-w-xs">
+              Infrared Protocol decoded by internal 8-bit Microcontroller. Microcontroller parses pulses & triggers Triac driver.
+            </p>
+          </div>
+
+          <!-- STAGE 4: SMART IOT MOBILE APP -->
+          <div id="control-stage-4" class="stage-control-panel hidden w-full flex flex-col items-center justify-center py-2">
+            <!-- Smartphone Shell Mockup -->
+            <div class="w-64 bg-slate-950 rounded-[2.5rem] p-3 border-4 border-slate-700 shadow-2xl relative overflow-hidden">
+              <!-- Phone Notch -->
+              <div class="w-20 h-4 bg-slate-800 rounded-b-xl mx-auto mb-2 flex items-center justify-center">
+                <div class="w-2 h-2 rounded-full bg-slate-900"></div>
+              </div>
+
+              <!-- Phone Screen Content -->
+              <div class="bg-slate-900 rounded-[1.8rem] p-4 flex flex-col gap-3 text-white border border-slate-800">
+                <!-- App Header -->
+                <div class="flex justify-between items-center text-xs border-b border-slate-800 pb-2">
+                  <span class="font-bold flex items-center gap-1.5 text-sky-400">
+                    <i class="fa-solid fa-wifi text-[10px]"></i> Smart Fan Pro
+                  </span>
+                  <span class="text-[10px] font-mono bg-emerald-500/20 text-emerald-400 px-1.5 py-0.5 rounded">CONNECTED</span>
+                </div>
+
+                <!-- Main App Power & Mode -->
+                <div class="flex justify-between items-center">
+                  <div>
+                    <div class="text-[10px] text-slate-400">STATUS</div>
+                    <div id="app-power-status" class="text-xs font-bold text-emerald-400">RUNNING</div>
+                  </div>
+                  <button onclick="toggleSmartPower()" id="app-power-btn" class="w-9 h-9 rounded-full bg-sky-500 text-white flex items-center justify-center shadow-lg text-xs">
+                    <i class="fa-solid fa-power-off"></i>
+                  </button>
+                </div>
+
+                <!-- Interactive Speed Slider -->
+                <div class="flex flex-col gap-1">
+                  <div class="flex justify-between text-[11px] font-mono">
+                    <span class="text-slate-400">SPEED CONTROL</span>
+                    <span id="app-speed-label" class="text-sky-400 font-bold">LEVEL 3</span>
+                  </div>
+                  <input type="range" id="smart-speed-slider" min="0" max="5" value="3" oninput="handleSmartSlider(this.value)" class="w-full accent-sky-400 h-1.5 bg-slate-800 rounded-lg cursor-pointer">
+                </div>
+
+                <!-- Smart Features Toggles -->
+                <div class="grid grid-cols-2 gap-2 text-[10px]">
+                  <button onclick="toggleAutoTempMode()" id="auto-temp-btn" class="p-2 rounded-xl bg-slate-800 border border-slate-700 flex flex-col gap-1 items-start transition-all">
+                    <i class="fa-solid fa-temperature-arrow-up text-amber-400"></i>
+                    <span class="font-semibold">Auto Temp Mode</span>
+                  </button>
+                  <button onclick="toggleEcoMode()" id="eco-mode-btn" class="p-2 rounded-xl bg-slate-800 border border-slate-700 flex flex-col gap-1 items-start transition-all">
+                    <i class="fa-solid fa-leaf text-emerald-400"></i>
+                    <span class="font-semibold">Eco Sleep Mode</span>
+                  </button>
+                </div>
+
+                <!-- Temperature Sensor Controls -->
+                <div class="bg-slate-950/80 p-2 rounded-xl border border-slate-800 flex justify-between items-center text-[10px]">
+                  <span class="text-slate-400">Simulate Temp:</span>
+                  <div class="flex items-center gap-2">
+                    <button onclick="adjustSimulatedTemp(-1)" class="w-5 h-5 bg-slate-800 rounded font-bold text-slate-200">-</button>
+                    <span id="sim-temp-val" class="font-mono text-amber-400 font-bold">28°C</span>
+                    <button onclick="adjustSimulatedTemp(1)" class="w-5 h-5 bg-slate-800 rounded font-bold text-slate-200">+</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <p class="text-xs text-slate-400 text-center mt-2 max-w-xs">
+              32-bit Microcontroller (ESP32/STM32) parses WiFi/Bluetooth packets, processes sensor data, and runs closed-loop PWM algorithms.
+            </p>
+          </div>
+
+        </div>
+      </div>
+
+    </section>
+
+    <section class="lg:col-span-12 glass-card p-6 mt-2">
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 border-b border-slate-800 pb-4">
+        <div>
+          <h2 class="text-xl font-bold text-white flex items-center gap-2">
+            <i class="fa-solid fa-scale-balanced text-sky-400"></i>
+            Comparative Paradigm Analysis
+          </h2>
+          <p class="text-xs text-slate-400">Why transition from purely electrical appliances to embedded systems?</p>
+        </div>
+        
+        <div class="flex items-center gap-3 text-xs font-mono">
+          <span class="flex items-center gap-1 text-slate-400"><span class="w-3 h-3 rounded bg-slate-700"></span> Conventional</span>
+          <span class="flex items-center gap-1 text-sky-400"><span class="w-3 h-3 rounded bg-sky-500"></span> Embedded System</span>
+        </div>
+      </div>
+
+      <!-- Comparison Matrix Table -->
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs border-collapse">
+          <thead>
+            <tr class="border-b border-slate-800 text-slate-400 font-mono">
+              <th class="p-3">CONTROL PARADIGM</th>
+              <th class="p-3">CORE HARDWARE</th>
+              <th class="p-3">ENERGY EFFICIENCY</th>
+              <th class="p-3">INTELLIGENCE & LOGIC</th>
+              <th class="p-3">USER EXPERIENCE</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-800/60 text-slate-300">
+            <!-- Stage 1 -->
+            <tr class="hover:bg-slate-800/30 transition-colors">
+              <td class="p-3 font-semibold text-white flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-slate-500"></span> 1. Direct Wall Switch
+              </td>
+              <td class="p-3 font-mono text-slate-400">Mechanical AC Switch</td>
+              <td class="p-3 text-amber-400">Low (Full 100% power or Off)</td>
+              <td class="p-3 text-slate-400">None (Zero Logic)</td>
+              <td class="p-3 text-slate-400">Manual physical contact required</td>
+            </tr>
+            <!-- Stage 2 -->
+            <tr class="hover:bg-slate-800/30 transition-colors">
+              <td class="p-3 font-semibold text-white flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-amber-500"></span> 2. Manual Regulator
+              </td>
+              <td class="p-3 font-mono text-slate-400">Variable Resistor / Triac</td>
+              <td class="p-3 text-amber-400">Moderate (Power wasted as heat in old types)</td>
+              <td class="p-3 text-slate-400">Analog Electrical Voltage Scaling</td>
+              <td class="p-3 text-slate-400">Manual knob twisting required</td>
+            </tr>
+            <!-- Stage 3 -->
+            <tr class="hover:bg-slate-800/30 transition-colors bg-sky-950/10">
+              <td class="p-3 font-semibold text-sky-400 flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-sky-400"></span> 3. IR Remote Control
+              </td>
+              <td class="p-3 font-mono text-sky-300">8-bit Microcontroller + IR Module</td>
+              <td class="p-3 text-emerald-400">High (Digital Triac firing angle control)</td>
+              <td class="p-3 text-sky-300">Decodes IR Bitframes & Digital States</td>
+              <td class="p-3 text-sky-300">Wireless handheld operation (Line of sight)</td>
+            </tr>
+            <!-- Stage 4 -->
+            <tr class="hover:bg-slate-800/30 transition-colors bg-sky-950/20">
+              <td class="p-3 font-semibold text-sky-400 flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-indigo-400"></span> 4. Smart IoT Embedded System
+              </td>
+              <td class="p-3 font-mono text-sky-300">32-bit MCU (ESP32) + Sensors + WiFi/BT</td>
+              <td class="p-3 text-emerald-400">Very High (Automated sensor feedback & PWM)</td>
+              <td class="p-3 text-sky-300">Closed-Loop Autonomous Feedback & Cloud Integration</td>
+              <td class="p-3 text-sky-300">Mobile app, Voice control, Schedule automation</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    // Global System State
+    const state = {
+      currentStage: 1,
+      powerOn: false,
+      speedLevel: 0, // 0 to 5
+      autoTempMode: false,
+      ecoMode: false,
+      simulatedTemp: 28, // Celsius
+    };
+
+    // Stage Metadata Definition
+    const stageData = {
+      1: {
+        badge: "Stage 1: Electrical",
+        archTag: "Direct AC Switch",
+        title: "Stage 1: Direct Wall Switch",
+        icon: "fa-solid fa-toggle-on",
+        statusText: "Direct AC voltage line connection. Zero microcontroller involvement.",
+        diagram: `
+          <div class="flex items-center justify-center space-x-2 text-xs font-mono">
+            <div class="p-3 bg-slate-800 border border-slate-700 rounded-lg text-center text-slate-300">AC Power Supply (230V)</div>
+            <i class="fa-solid fa-arrow-right text-slate-600"></i>
+            <div id="flow-node-switch" class="p-3 bg-slate-800 border border-slate-700 rounded-lg text-center font-bold text-slate-300 transition-all">Wall Switch (Mechanical)</div>
+            <i class="fa-solid fa-arrow-right text-slate-600"></i>
+            <div id="flow-node-motor" class="p-3 bg-slate-800 border border-slate-700 rounded-lg text-center text-slate-300 transition-all">Fan Induction Motor</div>
+          </div>
+        `
+      },
+      2: {
+        badge: "Stage 2: Analog Electrical",
+        archTag: "Voltage Phase Control",
+        title: "Stage 2: Manual Regulator",
+        icon: "fa-solid fa-sliders",
+        statusText: "Analog speed control via rheostat voltage divider or passive Triac dimmer.",
+        diagram: `
+          <div class="flex items-center justify-center space-x-2 text-xs font-mono">
+            <div class="p-3 bg-slate-800 border border-slate-700 rounded-lg text-center text-slate-300">AC Mains Supply</div>
+            <i class="fa-solid fa-arrow-right text-slate-600"></i>
+            <div id="flow-node-regulator" class="p-3 bg-slate-800 border border-slate-700 rounded-lg text-center text-amber-400 font-bold transition-all">Manual Regulator Knob</div>
+            <i class="fa-solid fa-arrow-right text-slate-600"></i>
+            <div id="flow-node-motor" class="p-3 bg-slate-800 border border-slate-700 rounded-lg text-center text-slate-300 transition-all">Fan Motor (Variable V)</div>
+          </div>
+        `
+      },
+      3: {
+        badge: "Stage 3: Basic Embedded System",
+        archTag: "Microcontroller + IR Decoder",
+        title: "Stage 3: IR Remote Control Fan",
+        icon: "fa-solid fa-wifi",
+        statusText: "Microcontroller decodes IR signal pulses and controls digital Triac driver.",
+        diagram: `
+          <div class="flex items-center justify-center space-x-2 text-xs font-mono">
+            <div class="p-2.5 bg-slate-800 border border-slate-700 rounded-lg text-center text-slate-300">IR Remote</div>
+            <i class="fa-solid fa-bolt text-red-500"></i>
+            <div class="p-2.5 bg-slate-800 border border-slate-700 rounded-lg text-center text-slate-300">IR Receiver</div>
+            <i class="fa-solid fa-arrow-right text-sky-400"></i>
+            <div id="flow-node-mcu" class="p-2.5 bg-sky-950 border border-sky-500/50 rounded-lg text-center font-bold text-sky-400 transition-all">8-Bit MCU (8051/PIC)</div>
+            <i class="fa-solid fa-arrow-right text-sky-400"></i>
+            <div id="flow-node-driver" class="p-2.5 bg-slate-800 border border-slate-700 rounded-lg text-center text-slate-300 transition-all">Opto-Triac Driver</div>
+            <i class="fa-solid fa-arrow-right text-slate-600"></i>
+            <div id="flow-node-motor" class="p-2.5 bg-slate-800 border border-slate-700 rounded-lg text-center text-slate-300 transition-all">Motor</div>
+          </div>
+        `
+      },
+      4: {
+        badge: "Stage 4: Advanced IoT Embedded System",
+        archTag: "32-Bit MCU + Sensors + Cloud",
+        title: "Stage 4: Smart IoT Control",
+        icon: "fa-solid fa-mobile-screen-button",
+        statusText: "Closed-loop feedback processing temperature sensors & wireless packet commands.",
+        diagram: `
+          <div class="flex items-center justify-center space-x-2 text-xs font-mono">
+            <div class="p-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-300">Mobile App / Cloud</div>
+            <i class="fa-solid fa-wifi text-emerald-400"></i>
+            <div id="flow-node-mcu" class="p-2 bg-sky-950 border border-sky-400 rounded-lg font-bold text-sky-400 text-center">ESP32 32-Bit MCU</div>
+            <i class="fa-solid fa-arrow-left text-amber-400"></i>
+            <div class="p-2 bg-amber-950/40 border border-amber-500/30 rounded-lg text-amber-400 text-center">Temp Sensor</div>
+            <i class="fa-solid fa-arrow-right text-sky-400"></i>
+            <div id="flow-node-driver" class="p-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-300">PWM Motor Driver</div>
+          </div>
+        `
+      }
+    };
+
+    function selectStage(stageNum) {
+      state.currentStage = stageNum;
+
+      // Update Navigation Tabs
+      document.querySelectorAll('.stage-tab').forEach((tab, index) => {
+        if (index + 1 === stageNum) {
+          tab.className = "stage-tab px-3 py-2 rounded-lg transition-all flex items-center space-x-2 whitespace-nowrap bg-sky-500/20 text-sky-400 border border-sky-500/40 font-bold";
+        } else {
+          tab.className = "stage-tab px-3 py-2 rounded-lg transition-all flex items-center space-x-2 whitespace-nowrap text-slate-400 hover:text-white";
+        }
+      });
+
+      // Update Control Panels Visibility
+      document.querySelectorAll('.stage-control-panel').forEach((panel, index) => {
+        if (index + 1 === stageNum) {
+          panel.classList.remove('hidden');
+        } else {
+          panel.classList.add('hidden');
+        }
+      });
+
+      // Update Header & Badge Information
+      const meta = stageData[stageNum];
+      document.getElementById('stage-badge').innerText = meta.badge;
+      document.getElementById('system-architecture-tag').innerText = meta.archTag;
+      document.getElementById('control-panel-title').innerText = meta.title;
+      document.getElementById('stage-icon').className = meta.icon + " text-sky-400";
+      document.getElementById('system-status-text').innerText = meta.statusText;
+      document.getElementById('block-diagram-container').innerHTML = meta.diagram;
+
+      // Show/Hide Temperature Sensor Badge
+      if (stageNum === 4) {
+        document.getElementById('temperature-badge').classList.remove('hidden');
+      } else {
+        document.getElementById('temperature-badge').classList.add('hidden');
+      }
+
+      // Reset System States for clean transition
+      if (stageNum === 1) {
+        state.speedLevel = state.powerOn ? 5 : 0;
+      }
+      
+      updateSystemGraphics();
+    }
+
+    function updateSystemGraphics() {
+      const blades = document.getElementById('fan-blades');
+      const airflow = document.getElementById('airflow-container');
+      const led = document.getElementById('status-led');
+      const powerVal = document.getElementById('power-value');
+      const rpmVal = document.getElementById('rpm-value');
+
+      // Auto Temperature Control Logic for Stage 4
+      if (state.currentStage === 4 && state.autoTempMode && state.powerOn) {
+        if (state.simulatedTemp < 22) state.speedLevel = 1;
+        else if (state.simulatedTemp < 26) state.speedLevel = 2;
+        else if (state.simulatedTemp < 30) state.speedLevel = 3;
+        else if (state.simulatedTemp < 34) state.speedLevel = 4;
+        else state.speedLevel = 5;
+        
+        document.getElementById('smart-speed-slider').value = state.speedLevel;
+        document.getElementById('app-speed-label').innerText = `LEVEL ${state.speedLevel} (AUTO)`;
+      }
+
+      // Calculate Spin Speed & Metrics
+      if (!state.powerOn || state.speedLevel === 0) {
+        blades.style.setProperty('--spin-duration', '0s');
+        airflow.classList.add('opacity-0');
+        led.setAttribute('fill', '#ef4444'); // Red LED
+        powerVal.innerText = "0 W";
+        rpmVal.innerText = "0";
+      } else {
+        // Speed Mapping (1 -> Slowest, 5 -> Fastest)
+        const speeds = { 1: '1.8s', 2: '1.2s', 3: '0.7s', 4: '0.4s', 5: '0.18s' };
+        const rpms = { 1: 80, 2: 140, 3: 210, 4: 280, 5: 350 };
+        const powers = { 1: 15, 2: 28, 3: 42, 4: 58, 5: 75 };
+
+        blades.style.setProperty('--spin-duration', speeds[state.speedLevel]);
+        airflow.classList.remove('opacity-0');
+        led.setAttribute('fill', '#10b981'); // Green LED
+        powerVal.innerText = `${powers[state.speedLevel]} W`;
+        rpmVal.innerText = `${rpms[state.speedLevel]}`;
+      }
+
+      // Update Node Block Visuals
+      const mcuNode = document.getElementById('flow-node-mcu');
+      if (mcuNode) {
+        if (state.powerOn && state.speedLevel > 0) {
+          mcuNode.classList.add('shadow-lg', 'shadow-sky-500/30', 'border-sky-400');
+        } else {
+          mcuNode.classList.remove('shadow-lg', 'shadow-sky-500/30', 'border-sky-400');
+        }
+      }
+    }
+
+    function toggleStage1Switch() {
+      state.powerOn = !state.powerOn;
+      state.speedLevel = state.powerOn ? 5 : 0; // Stage 1 is fixed 100% speed
+
+      const lever = document.getElementById('switch-lever');
+      const label = document.getElementById('switch-state-label');
+
+      if (state.powerOn) {
+        lever.classList.add('translate-y-12');
+        label.innerText = 'ON';
+        label.className = 'text-xs font-bold text-emerald-500 font-mono';
+      } else {
+        lever.classList.remove('translate-y-12');
+        label.innerText = 'OFF';
+        label.className = 'text-xs font-bold text-red-600 font-mono';
+      }
+
+      updateSystemGraphics();
+    }
+
+    function setRegulatorSpeed(speed) {
+      state.speedLevel = speed;
+      state.powerOn = speed > 0;
+
+      document.getElementById('regulator-speed-num').innerText = speed;
+      const knob = document.getElementById('rotary-knob');
+      const angles = { 0: 0, 1: 45, 2: 90, 3: 135, 4: 180, 5: 225 };
+      knob.style.transform = `rotate(${angles[speed]}deg)`;
+
+      updateSystemGraphics();
+    }
+
+    function triggerIRPulse() {
+      const beam = document.getElementById('ir-beam-indicator');
+      beam.classList.remove('hidden');
+      setTimeout(() => beam.classList.add('hidden'), 600);
+    }
+
+    function pressIRRemotePower() {
+      triggerIRPulse();
+      state.powerOn = !state.powerOn;
+      if (state.powerOn && state.speedLevel === 0) state.speedLevel = 3;
+      updateSystemGraphics();
+    }
+
+    function adjustIRSpeed(delta) {
+      triggerIRPulse();
+      if (!state.powerOn) state.powerOn = true;
+      let newSpeed = state.speedLevel + delta;
+      if (newSpeed < 1) newSpeed = 1;
+      if (newSpeed > 5) newSpeed = 5;
+      state.speedLevel = newSpeed;
+      updateSystemGraphics();
+    }
+
+    function setIRSpeed(spd) {
+      triggerIRPulse();
+      state.powerOn = true;
+      state.speedLevel = spd;
+      updateSystemGraphics();
+    }
+
+    function toggleSmartPower() {
+      state.powerOn = !state.powerOn;
+      const btn = document.getElementById('app-power-btn');
+      const status = document.getElementById('app-power-status');
+
+      if (state.powerOn) {
+        btn.className = "w-9 h-9 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-lg text-xs";
+        status.innerText = "RUNNING";
+        status.className = "text-xs font-bold text-emerald-400";
+        if (state.speedLevel === 0) state.speedLevel = 3;
+      } else {
+        btn.className = "w-9 h-9 rounded-full bg-slate-700 text-slate-400 flex items-center justify-center text-xs";
+        status.innerText = "OFF";
+        status.className = "text-xs font-bold text-slate-500";
+      }
+
+      updateSystemGraphics();
+    }
+
+    function handleSmartSlider(val) {
+      state.speedLevel = parseInt(val);
+      state.powerOn = state.speedLevel > 0;
+      state.autoTempMode = false; // Manual slider overrides auto mode
+      document.getElementById('auto-temp-btn').classList.remove('border-amber-400', 'bg-amber-500/20');
+      document.getElementById('app-speed-label').innerText = `LEVEL ${state.speedLevel}`;
+      updateSystemGraphics();
+    }
+
+    function toggleAutoTempMode() {
+      state.autoTempMode = !state.autoTempMode;
+      const btn = document.getElementById('auto-temp-btn');
+      if (state.autoTempMode) {
+        btn.classList.add('border-amber-400', 'bg-amber-500/20');
+      } else {
+        btn.classList.remove('border-amber-400', 'bg-amber-500/20');
+      }
+      updateSystemGraphics();
+    }
+
+    function toggleEcoMode() {
+      state.ecoMode = !state.ecoMode;
+      const btn = document.getElementById('eco-mode-btn');
+      if (state.ecoMode) {
+        btn.classList.add('border-emerald-400', 'bg-emerald-500/20');
+        state.speedLevel = 1;
+        document.getElementById('smart-speed-slider').value = 1;
+        document.getElementById('app-speed-label').innerText = `LEVEL 1 (ECO)`;
+      } else {
+        btn.classList.remove('border-emerald-400', 'bg-emerald-500/20');
+      }
+      updateSystemGraphics();
+    }
+
+    function adjustSimulatedTemp(delta) {
+      state.simulatedTemp += delta;
+      document.getElementById('sim-temp-val').innerText = `${state.simulatedTemp}°C`;
+      document.getElementById('temp-display').innerText = `${state.simulatedTemp}°C`;
+      updateSystemGraphics();
+    }
+
+    // Initialize Default Stage View
+    window.onload = function() {
+      selectStage(1);
+    };
+  </script>
+</body>
+</html>

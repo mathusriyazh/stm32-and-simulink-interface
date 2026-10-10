@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>How to Choose the Right Board for Your Application</title>
+<style>
+:root{--bg1:#0a1f4f;--bg2:#050f2b;--card:#102a5f;--line:#2d4f95;--ink:#eaf2ff;--mute:#9db6de;--acc:#5cc8ff;--hot:#ffb347;--ok:#6be08f;--no:#ff7b7b}
+*{box-sizing:border-box}
+body{margin:0;color:var(--ink);font:16px/1.55 system-ui,sans-serif;background:linear-gradient(160deg,var(--bg1),var(--bg2));background-attachment:fixed}
+main{max-width:1000px;margin:0 auto;padding:26px 16px 60px}
+h1{font:700 clamp(1.5rem,4vw,2.2rem)/1.2 Georgia,serif;margin:0 0 6px}h1 em{font-style:normal;color:var(--acc)}
+h2{font:700 1.3rem Georgia,serif;margin:34px 0 10px;color:#fff}
+p{margin:0 0 10px;max-width:72ch}.lead,.mute{color:var(--mute)}
+button,select{font:600 .9rem system-ui;color:var(--ink);cursor:pointer}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--hot);outline-offset:2px}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px}
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}
+.st{text-align:left;border:1px solid var(--line);background:rgba(16,42,95,.7);border-radius:8px;padding:10px;font:inherit;color:var(--ink);transition:background .25s}
+.st b{display:block;color:var(--hot);font-size:.75rem;letter-spacing:.08em}
+.st.on{background:var(--acc);color:#04204a;border-color:var(--acc)}.st.on b{color:#04204a}
+.info{margin-top:10px;padding:10px 14px;border-left:4px solid var(--hot);background:rgba(255,179,71,.1);min-height:4.2em}
+.wiz{display:grid;grid-template-columns:minmax(250px,340px) 1fr;gap:18px;align-items:start}
+@media(max-width:780px){.wiz{grid-template-columns:1fr}}
+.ctl label{display:block;margin:0 0 12px;font-size:.88rem}
+.ctl label small{display:block;color:var(--mute);font-size:.78rem}
+.ctl input[type=range]{width:100%;display:block}
+.ctl select{width:100%;padding:7px;background:#0a1f4f;border:1px solid var(--line);border-radius:6px;margin-top:3px}
+.ck{display:flex;flex-wrap:wrap;gap:6px 14px;margin:0 0 12px;font-size:.88rem}.ck label{margin:0;display:flex;gap:5px;align-items:center}
+.pre{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.pre button{padding:6px 11px;border:1px solid var(--line);background:rgba(16,42,95,.7);border-radius:20px;font-size:.82rem}
+.pre button:hover{border-color:var(--acc)}
+.list{display:flex;flex-direction:column;gap:10px}
+.row{border:2px solid var(--line);border-radius:10px;padding:10px 14px;background:#07173d;transition:border-color .3s,opacity .3s}
+.row.top{border-color:var(--ok);background:rgba(107,224,143,.08)}.row.out{opacity:.55}
+.row h3{display:flex;justify-content:space-between;gap:8px;margin:0;font:700 1rem system-ui}
+.row h3 span:last-child{font-family:ui-monospace,monospace;color:var(--acc)}
+.badge{font-size:.7rem;background:var(--ok);color:#04204a;border-radius:10px;padding:1px 8px;margin-left:6px;vertical-align:middle}
+.bar{height:10px;border-radius:5px;background:#0a1f4f;border:1px solid var(--line);overflow:hidden;margin:6px 0}
+.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#2b8cd9,#5cc8ff);transition:width .8s cubic-bezier(.2,.8,.2,1)}
+.row.top .bar i{background:linear-gradient(90deg,#2faa63,#6be08f)}
+.sm{font-size:.85rem;color:var(--mute)}
+.pills{display:flex;flex-wrap:wrap;gap:5px;margin-top:5px}.pills span{font-size:.72rem;border:1px solid var(--line);border-radius:10px;padding:1px 8px;color:var(--mute)}
+.det{display:none;margin-top:8px;font-size:.88rem}.row.top .det{display:block}
+.det b{color:var(--ok)}.det .w b{color:var(--hot)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+.card b{display:block;color:var(--acc);margin-bottom:2px}.card p{margin:0;font-size:.9rem;color:var(--mute)}
+ul{margin:0;padding-left:20px}li{margin-bottom:6px}
+.note{font-size:.82rem;color:var(--mute)}
+@media (prefers-reduced-motion:reduce){.st,.row,.bar i{transition:none}}
+</style>
+</head>
+<body>
+<main>
+<h1>How to choose the <em>right board</em> for your application</h1>
+<p class="lead">Do not pick a board by name or price alone. Start from what the project must do, then match it to a board. Follow the five steps, then use the board finder to see ranked matches.</p>
+
+<h2>1. The five-step method</h2>
+<div class="steps" id="steps"></div>
+<div class="info" id="si" aria-live="polite"></div>
+
+<h2>2. Board finder</h2>
+<p class="mute">Set what your project needs. Boards that cannot do a must-have are ruled out; the rest are scored and ranked.</p>
+<div class="panel wiz">
+<div class="ctl">
+<div class="pre" id="pre" role="group" aria-label="Example projects"></div>
+<label>Processing power: <b id="v1"></b><input type="range" id="np" min="1" max="5" value="2"></label>
+<label>Memory (program + data): <b id="v2"></b><input type="range" id="nm" min="1" max="5" value="2"></label>
+<label>Battery life matters: <b id="v3"></b><input type="range" id="nl" min="1" max="5" value="1"></label>
+<label>Low cost matters: <b id="v4"></b><input type="range" id="nc" min="1" max="5" value="3"></label>
+<label>Wireless needed<select id="nw"><option value="">None</option><option value="ble">Bluetooth LE</option><option value="wifi">Wi-Fi</option><option value="lora">LoRa</option></select></label>
+<div class="ck"><label><input type="checkbox" id="ne"> Ethernet</label><label><input type="checkbox" id="na"> CAN</label><label><input type="checkbox" id="nu"> USB</label><label><input type="checkbox" id="nmo"> Motor control</label></div>
+<label>Your experience<select id="nx"><option value="1">Beginner</option><option value="0.5" selected>Intermediate</option><option value="0.2">Professional</option></select></label>
+</div>
+<div class="list" id="list" aria-live="polite"></div>
+</div>
+<p class="note" style="margin-top:8px">Scores are a guide for comparing options, not a measurement. Board specifications and availability change, so check the maker's board page and the chip datasheet before buying.</p>
+
+<h2>3. Checklist before you decide</h2>
+<div class="grid" id="chk"></div>
+
+<h2>4. Common mistakes</h2>
+<div class="panel"><ul>
+<li>Buying the fastest board "just in case". It costs more, uses more power and is harder to set up.</li>
+<li>Forgetting the pins. List every sensor and actuator, then check in STM32CubeMX that each peripheral has a free pin.</li>
+<li>Ignoring voltage levels. STM32 pins are 3.3 V; many sensors and modules are 5 V.</li>
+<li>Choosing a board with no debugger. A built-in ST-LINK saves hours of guessing.</li>
+<li>Not leaving headroom. Keep about 20 % spare Flash, RAM and CPU time for future features.</li>
+<li>Treating the dev board as the product. Prototype on a board, then move the chip to your own PCB.</li>
+</ul></div>
+</main>
+
+<script>
+var $=function(i){return document.getElementById(i)};
+/* ---- steps ---- */
+var S=[["Define the job","Write one sentence: what must the device sense, decide and control? Add how fast, how accurate and how long it must run."],
+["List interfaces","Count sensors and actuators and the buses they need: ADC, PWM, I2C, SPI, UART, CAN, USB, Ethernet. Note any wireless need."],
+["Size the processing","Simple switching needs little. Filters and floating-point math need more. Graphics, audio, vision and AI need a lot of speed and memory."],
+["Weigh power, cost, tools","Battery products need low-power chips. Beginners benefit from a built-in programmer and many tutorials. Check budget and availability."],
+["Prototype, then produce","Test on a ready-made development board. When the design works, move the same chip or a pin-compatible one onto your own PCB."]];
+var cur=0,hold=false;
+S.forEach(function(s,i){var b=document.createElement("button");b.className="st";b.innerHTML="<b>STEP "+(i+1)+"</b>"+s[0];b.onclick=function(){go(i);hold=true;setTimeout(function(){hold=false},9000)};$("steps").appendChild(b)});
+function go(i){cur=i;[].forEach.call($("steps").children,function(b,k){b.classList.toggle("on",k==i)});$("si").innerHTML="<b>"+(i+1)+". "+S[i][0]+":</b> "+S[i][1]}
+go(0);setInterval(function(){if(!hold&&!matchMedia("(prefers-reduced-motion:reduce)").matches)go((cur+1)%5)},3600);
+/* ---- boards: name, summary, perf, mem, lowpower, cost(5=cheap), ease, wireless, eth, can, usb, motor, debugger, note, stm32 ---- */
+var BD=[
+["NUCLEO-C031C6","Cortex-M0+ 48 MHz, 32 KB Flash, 12 KB RAM",1,1,3,5,5,[],0,0,0,2,1,"Very small memory. No USB, CAN or Ethernet.",1],
+["NUCLEO-F103RB","Cortex-M3 72 MHz, 128 KB Flash, 20 KB RAM",2,2,2,4,5,[],0,1,1,3,1,"Older chip with no FPU. USB and CAN cannot be used together.",1],
+["NUCLEO-F446RE","Cortex-M4F 180 MHz, 512 KB Flash, 128 KB RAM",3,3,2,3,5,[],0,1,1,4,1,"No Ethernet or wireless built in.",1],
+["NUCLEO-G474RE","Cortex-M4F 170 MHz, 512 KB Flash, 128 KB RAM",4,3,2,3,4,[],0,1,1,5,1,"Powerful analog and math blocks take more learning. No wireless.",1],
+["NUCLEO-L476RG","Cortex-M4F 80 MHz, 1 MB Flash, 128 KB RAM",2,4,5,3,5,[],0,1,1,2,1,"Moderate speed. Chosen for battery life, not speed.",1],
+["NUCLEO-WB55RG","Cortex-M4 64 MHz + M0+ radio, 1 MB Flash, 256 KB RAM",2,4,4,2,3,["ble"],0,0,1,1,1,"Radio firmware and the dual-core setup add complexity.",1],
+["NUCLEO-WL55JC","Cortex-M4 48 MHz + M0+ (LoRa), 256 KB Flash, 64 KB RAM",2,3,5,2,2,["lora"],0,0,0,1,1,"Needs a LoRa gateway or network; setup is more advanced.",1],
+["NUCLEO-U575ZI-Q","Cortex-M33 160 MHz, 2 MB Flash, 786 KB RAM, TrustZone",4,5,5,2,3,[],0,1,1,3,1,"Newer line with fewer tutorials. Security setup is advanced.",1],
+["NUCLEO-H743ZI2","Cortex-M7 480 MHz, 2 MB Flash, about 1 MB RAM, Ethernet",5,5,1,1,3,[],1,1,1,4,1,"Uses more power and costs more. Clocks, caches and memory need careful setup.",1],
+["Blue Pill (F103C8T6)","Cortex-M3 72 MHz, 64 KB Flash, 20 KB RAM",2,2,2,5,2,[],0,1,1,3,0,"No built-in debugger: needs an ST-LINK or USB-serial adapter. Clone quality varies.",1],
+["ESP32 DevKit (not STM32)","Dual-core 240 MHz, about 4 MB Flash, 520 KB RAM, Wi-Fi + BLE",3,4,2,5,4,["wifi","ble"],0,1,0,2,0,"Not an STM32, so the tools differ. Best when Wi-Fi is the main need.",0]];
+var WN={ble:"Bluetooth LE",wifi:"Wi-Fi",lora:"LoRa"};
+var L1=["simple control","sensors + small loops","float math, filters","fast control, heavy DSP","graphics, vision, AI"],
+L2=["tiny (up to 32 KB)","small (64 to 128 KB)","medium (256 to 512 KB)","large (about 1 MB)","very large (2 MB or more)"],
+L3=["not important","a little","moderate","important","critical"],L4=["not important","a little","moderate","important","critical"];
+/* build rows once */
+BD.forEach(function(b,i){var r=document.createElement("article");r.className="row";r.id="r"+i;
+ var p=[];b[7].forEach(function(w){p.push(WN[w])});if(b[8])p.push("Ethernet");if(b[9])p.push("CAN");if(b[10])p.push("USB");if(b[12])p.push("Built-in debugger");if(b[14])p.push("Arm Cortex-M");
+ r.innerHTML='<h3><span class="nm"></span><span class="sc"></span></h3><div class="bar"><i></i></div><div class="sm"></div><div class="pills">'+p.map(function(x){return"<span>"+x+"</span>"}).join("")+'</div><div class="det"><div class="y"></div><div class="w"></div></div>';
+ r.querySelector(".nm").textContent=b[0];r.querySelector(".sm").textContent=b[1];$("list").appendChild(r)});
+/* ---- scoring ---- */
+function V(id){return $(id).value}
+function calc(){
+ var np=+V("np"),nm=+V("nm"),nl=+V("nl"),nc=+V("nc"),nw=V("nw"),ne=$("ne").checked,na=$("na").checked,nu=$("nu").checked,mo=$("nmo").checked,ex=+V("nx");
+ $("v1").textContent=L1[np-1];$("v2").textContent=L2[nm-1];$("v3").textContent=L3[nl-1];$("v4").textContent=L4[nc-1];
+ var res=BD.map(function(b,i){var bad=[];
+  if(nw&&b[7].indexOf(nw)<0)bad.push("no "+WN[nw]);if(ne&&!b[8])bad.push("no Ethernet");if(na&&!b[9])bad.push("no CAN");if(nu&&!b[10])bad.push("no USB");
+  var sp=b[2]>=np?1:Math.max(0,1-.3*(np-b[2])),sm=b[3]>=nm?1:Math.max(0,1-.3*(nm-b[3])),wl=nl/5,wc=nc/5,
+  tot=3*sp+2*sm+2*wl*b[4]/5+2*wc*b[5]/5+2*ex*b[6]/5+(mo?2*b[11]/5:0),den=3+2+2*wl+2*wc+2*ex+(mo?2:0);
+  return{i:i,bad:bad,s:Math.round(tot/den*100)}});
+ res.sort(function(a,b){return(a.bad.length>0)-(b.bad.length>0)||b.s-a.s});
+ var shown=0;
+ res.forEach(function(r,k){var b=BD[r.i],el=$("r"+r.i),out=r.bad.length>0,top=!out&&shown<3;if(!out)shown++;
+  el.style.order=k;el.className="row"+(out?" out":"")+(top?" top":"");
+  el.querySelector(".nm").innerHTML=b[0].replace(/</g,"&lt;")+(top&&shown==1?'<span class="badge">Best match</span>':"");
+  el.querySelector(".sc").textContent=out?"Ruled out":r.s+"%";
+  el.querySelector(".bar i").style.width=out?"0%":r.s+"%";
+  if(out)el.querySelector(".sm").textContent=b[1]+" | "+r.bad.join(", ");else el.querySelector(".sm").textContent=b[1];
+  if(top){var y=[];if(b[2]>=np)y.push("enough processing power");if(b[3]>=nm)y.push("enough memory");if(nw)y.push("has "+WN[nw]);if(ne)y.push("has Ethernet");if(na)y.push("has CAN");if(nu)y.push("has USB");
+   if(mo&&b[11]>=4)y.push("strong motor-control features");if(nl>=4&&b[4]>=4)y.push("very low power");if(nc>=4&&b[5]>=4)y.push("low cost");if(ex>=.5&&b[12])y.push("built-in programmer and debugger");
+   el.querySelector(".y").innerHTML="<b>Why:</b> "+(y.length?y.join(", "):"a balanced overall fit")+".";el.querySelector(".w").innerHTML="<b>Watch out:</b> "+b[13]}});
+ if(!shown)$("list").insertAdjacentHTML("afterbegin","")}
+["np","nm","nl","nc","nw","ne","na","nu","nmo","nx"].forEach(function(i){$(i).oninput=$(i).onchange=calc});
+/* ---- presets ---- */
+var PR=[["Learning basics",{np:2,nm:2,nl:1,nc:4,nw:"",ne:0,na:0,nu:0,nmo:0,nx:"1"}],
+["Motor drive",{np:4,nm:3,nl:1,nc:3,nw:"",ne:0,na:0,nu:0,nmo:1,nx:"0.5"}],
+["Battery sensor",{np:2,nm:2,nl:5,nc:3,nw:"",ne:0,na:0,nu:0,nmo:0,nx:"0.5"}],
+["Bluetooth gadget",{np:2,nm:3,nl:4,nc:3,nw:"ble",ne:0,na:0,nu:0,nmo:0,nx:"0.5"}],
+["Wi-Fi IoT",{np:3,nm:3,nl:2,nc:4,nw:"wifi",ne:0,na:0,nu:0,nmo:0,nx:"0.5"}],
+["Industrial gateway",{np:4,nm:4,nl:1,nc:2,nw:"",ne:1,na:1,nu:0,nmo:0,nx:"0.2"}]];
+PR.forEach(function(p){var b=document.createElement("button");b.textContent=p[0];b.onclick=function(){var v=p[1];for(var k in v){var e=$(k);if(e.type=="checkbox")e.checked=!!v[k];else e.value=v[k]}calc()};$("pre").appendChild(b)});
+calc();
+/* ---- checklist ---- */
+var C=[["Performance and memory","Clock speed, FPU or DSP needs, Flash and RAM. Estimate, then leave 20 % spare."],
+["Pins and peripherals","Count ADC channels, PWM outputs, buses and GPIOs. Check pin conflicts in STM32CubeMX."],
+["Connectivity","Bluetooth, Wi-Fi, LoRa, Ethernet, CAN, USB. Built-in radios save space and certification effort."],
+["Power","Supply voltage, current draw and sleep current. Battery products need low-power chips."],
+["Programming and debugging","A built-in ST-LINK lets you flash and step through code with just a USB cable."],
+["Software and support","IDE, drivers, examples, community and any MATLAB or Simulink support package for the board."],
+["Form factor and expansion","Arduino headers or shields, breadboard friendly pins, size and mounting for the final product."],
+["Cost and availability","Board price, chip price at volume and long-term supply. Avoid doubtful clone parts."]];
+$("chk").innerHTML=C.map(function(c,i){return'<div class="card"><b>'+(i+1)+'. '+c[0]+'</b><p>'+c[1]+'</p></div>'}).join("");
+</script>
+</body>
+</html>

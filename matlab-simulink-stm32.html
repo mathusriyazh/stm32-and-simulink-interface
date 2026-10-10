@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MATLAB, Simulink and STM32: Sensors and Actuators</title>
+<style>
+:root{--bg:#f4f8fb;--ink:#14263a;--mute:#52667a;--grid:#dbe6ee;--blue:#1c6ea4;--org:#d9480f;--card:#fff;--line:#c3d3df}
+*{box-sizing:border-box}
+body{margin:0;color:var(--ink);font:16px/1.55 system-ui,sans-serif;background-color:var(--bg);
+background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:24px 24px}
+main{max-width:960px;margin:0 auto;padding:26px 16px 60px}
+header{display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px;align-items:flex-start}
+h1{font:700 1.8rem Georgia,serif;margin:0 0 4px}
+.sub{color:var(--mute);margin:0 0 16px;max-width:66ch}
+button,select{font:600 .9rem system-ui;color:var(--ink)}
+#pz{padding:8px 12px;border:1px solid var(--line);background:var(--card);border-radius:6px;cursor:pointer}
+nav{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+nav button{padding:8px 12px;border:1px solid var(--line);background:var(--card);border-radius:6px;cursor:pointer}
+nav button[aria-selected=true]{background:var(--ink);color:#fff;border-color:var(--ink)}
+button:focus-visible,input:focus-visible,.b:focus-visible{outline:3px solid var(--org);outline-offset:2px}
+section{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:16px}
+section[hidden]{display:none}
+h2{margin:0 0 6px;font:700 1.3rem Georgia,serif}
+p{margin:0 0 10px;max-width:74ch}
+svg.dg{width:100%;height:auto;display:block;background:#fbfdff;border:1px solid var(--line);border-radius:6px}
+.bx{fill:#e6f0f7;stroke:#1c6ea4;stroke-width:2;transition:fill .2s}
+.b{cursor:pointer}.b.on .bx{fill:#d9480f;stroke:#d9480f}.b.on text{fill:#fff}
+.ch .bx{fill:#dcebf5}
+.t{font:12px system-ui,sans-serif;fill:#14263a}.tb{font-weight:700}.tm{fill:#52667a;font-size:11px}
+.ar{stroke:#14263a;stroke-width:2;fill:none}
+#wi{margin-top:10px;padding:10px 14px;border-left:4px solid var(--org);background:#fff3ea;min-height:4.6em}
+pre{background:#10253a;color:#e8f1f8;padding:12px 14px;border-radius:6px;overflow-x:auto;font:13px/1.5 ui-monospace,Consolas,monospace;margin:12px 0 0}
+.ctl{display:flex;flex-wrap:wrap;gap:14px;align-items:center;margin:10px 0;font-size:.9rem}
+.ctl label{display:flex;gap:6px;align-items:center}
+.ctl input[type=range]{width:150px}
+.ctl button{padding:7px 12px;border:1px solid var(--org);background:#fff3ea;border-radius:6px;cursor:pointer}
+canvas{width:100%;height:auto;border:1px solid var(--line);border-radius:6px;background:#fbfdff;display:block}
+.out{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin:10px 0}
+.out div{border:1px solid var(--line);border-radius:6px;padding:7px 10px;background:#fbfdff}
+.out small{display:block;color:var(--mute);font-size:.75rem}
+.out b{font:700 1.1rem ui-monospace,Consolas,monospace}
+.scroll{overflow-x:auto;margin-top:12px}
+table{border-collapse:collapse;width:100%;font-size:.86rem;min-width:760px}
+th,td{border:1px solid var(--line);padding:7px 9px;text-align:left;vertical-align:top}
+th{background:#e6f0f7}td:first-child{font-weight:700}
+.note{font-size:.82rem;color:var(--mute)}
+li{margin-bottom:4px}
+</style>
+</head>
+<body>
+<main>
+<header>
+<div><h1>MATLAB, Simulink and STM32</h1>
+<p class="sub">See how an idea in MATLAB becomes running code on an STM32, and how sensors and actuators connect to it. Click the boxes, move the sliders and watch the signal dots.</p></div>
+<button id="pz">Pause animation</button>
+</header>
+<nav id="tabs" role="tablist"></nav>
+
+<section id="p-flow">
+<h2>From MATLAB to a running STM32</h2>
+<svg class="dg" id="s-flow" viewBox="0 0 900 140" role="img" aria-label="Workflow from MATLAB to STM32"></svg>
+<div id="wi" aria-live="polite"></div>
+<pre>function duty = ctrl(sp, adc)        % MATLAB Function block in Simulink
+  persistent I; if isempty(I), I = 0; end
+  temp = adc * 3.3 / 4095 * 100;     % ADC code to degC (LM35: 10 mV per degC)
+  e    = sp - temp;                  % error
+  I    = min(max(I + 0.05*e*0.1, 0), 1);   % integral term, sample time 0.1 s
+  duty = min(max(0.1*e + I, 0), 1);  % PWM duty from 0 to 1
+end</pre>
+<p class="note" style="margin-top:8px">The same function runs in MATLAB, in a Simulink simulation and, after code generation, on the STM32.</p>
+</section>
+
+<section id="p-chain" class="ch" hidden>
+<h2>Signal chain: sensor to actuator</h2>
+<p>Each dot is a signal travelling through the system. The analog path uses the ADC and PWM; the digital path uses a bus such as I2C or SPI and digital outputs.</p>
+<svg class="dg" id="s-chain" viewBox="0 0 900 240" role="img" aria-label="Analog and digital signal chains"></svg>
+</section>
+
+<section id="p-loop" hidden>
+<h2>Closed-loop demo: temperature control</h2>
+<p>This is the model you would build in Simulink. An LM35 sensor goes through the ADC, a PID block decides, and PWM drives a heater. Change the setpoint or the gains and watch the response.</p>
+<svg class="dg" id="s-loop" viewBox="0 0 900 150" role="img" aria-label="Simulink closed loop model"></svg>
+<div class="ctl">
+<label>Setpoint <input type="range" id="sp" min="20" max="80" value="50"><b id="spv">50</b> &deg;C</label>
+<label>Kp <input type="range" id="kp" min="0" max="30" value="10"><b id="kpv">0.10</b></label>
+<label>Ki <input type="range" id="ki" min="0" max="20" value="5"><b id="kiv">0.05</b></label>
+<button id="dist">Cool the room (disturbance)</button>
+</div>
+<canvas id="cv" width="760" height="230" aria-label="Temperature, setpoint and PWM duty over time"></canvas>
+<p class="note">Blue: measured temperature. Grey dashed: setpoint. Orange: PWM duty (%). Both share the 0 to 100 scale.</p>
+<div class="out">
+<div><small>Temperature</small><b id="o-t">0</b></div><div><small>ADC code</small><b id="o-a">0</b></div>
+<div><small>PWM duty</small><b id="o-d">0</b></div><div><small>Error</small><b id="o-e">0</b></div>
+</div>
+</section>
+
+<section id="p-if" hidden>
+<h2>STM32 interfaces to sensors and actuators</h2>
+<svg class="dg" id="s-if" viewBox="0 0 900 300" role="img" aria-label="STM32 peripherals connected to sensors and actuators"></svg>
+<div class="scroll"><table id="tb"></table></div>
+<p class="note" style="margin-top:8px">Block names and supported peripherals differ by MATLAB release, support package and board. Check the documentation for your versions.</p>
+<h3>Wiring checklist</h3>
+<ul>
+<li>STM32 logic is 3.3 V. Use level shifting for 5 V sensors.</li>
+<li>Connect all grounds together: STM32, sensor, driver and supply.</li>
+<li>Pins give only a small current. Use a MOSFET, driver board or relay module for motors, heaters and mains loads.</li>
+<li>In Simulink use a fixed-step solver and match the model sample time to the loop speed you want on the target.</li>
+</ul>
+</section>
+</main>
+
+<script>
+var $=function(i){return document.getElementById(i)},paused=false;
+function M(id){return '<defs><marker id="'+id+'" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto"><path d="M0 0L9 3.5 0 7z" fill="#14263a"/></marker></defs>'}
+function T(x,y,s,c){return '<text class="t '+(c||"")+'" x="'+x+'" y="'+y+'" text-anchor="middle">'+s+'</text>'}
+function B(x,y,w,h,a,b,i){return '<g class="b"'+(i>=0?' tabindex="0" data-i="'+i+'"':"")+'><rect class="bx" x="'+x+'" y="'+y+'" width="'+w+'" height="'+h+'" rx="6"/>'+T(x+w/2,y+h/2-2,a,"tb")+T(x+w/2,y+h/2+14,b,"tm")+'</g>'}
+function A(x1,y,x2,id){return '<path class="ar" d="M'+x1+' '+y+'H'+x2+'" marker-end="url(#'+id+')"/>'}
+function Dot(p,d,b){return '<circle r="5" fill="#d9480f"><animateMotion dur="'+d+'s" begin="'+b+'s" repeatCount="indefinite" path="'+p+'"/></circle>'}
+var X=[10,190,370,550,730];
+
+/* ---------- Workflow ---------- */
+var ST=[["MATLAB","algorithm and data","Write and test your algorithm, filter or controller. Analyse recorded sensor data, tune PID gains and plot results before building any model."],
+["Simulink","model and simulate","Build the block diagram: sensor input, controller, actuator output. Simulate it with a plant model on your PC first, using a fixed-step solver and a sample time such as 10 ms."],
+["Embedded Coder","generate C code","Embedded Coder turns the model into C code. The STM32 support package adds hardware blocks (ADC, PWM, digital I/O, serial) and board settings. The exact list depends on your MATLAB release and board."],
+["Build and flash","toolchain + ST-LINK","The generated code is compiled with an ARM toolchain and downloaded to the board, usually over the ST-LINK USB connection."],
+["STM32 runs","real sensors and actuators","The microcontroller reads sensors, runs the control step every sample time and drives the actuators. On supported setups you can monitor and tune signals from Simulink while it runs."]];
+var h=M("a1");
+ST.forEach(function(s,i){h+=B(X[i],35,130,70,s[0],s[1],i);if(i<4)h+=A(X[i]+130,70,X[i+1],"a1")});
+$("s-flow").innerHTML=h+Dot("M10 70H860",9,0);
+var cur=0,hold=false,gs=$("s-flow").querySelectorAll(".b");
+function sel(i){cur=i;gs.forEach(function(g,k){g.classList.toggle("on",k==i)});$("wi").innerHTML="<b>"+(i+1)+". "+ST[i][0]+":</b> "+ST[i][2]}
+gs.forEach(function(g,i){g.onclick=function(){sel(i);hold=true;setTimeout(function(){hold=false},9000)};g.onkeydown=function(e){if(e.key=="Enter"||e.key==" "){e.preventDefault();g.onclick()}}});
+sel(0);setInterval(function(){if(!paused&&!hold)sel((cur+1)%5)},2800);
+
+/* ---------- Signal chain ---------- */
+var R1=[["Analog sensor","LM35, LDR, pot"],["ADC","12-bit, 0 to 3.3 V"],["Simulink code","gain, filter, PID"],["PWM timer","duty 0 to 100 %"],["Driver + load","MOSFET, motor, heater"]],
+G1=["volts","code","duty","power"],
+R2=[["Digital sensor","MPU6050, BMP280"],["I2C / SPI","bus peripheral"],["Simulink code","read, filter, decide"],["GPIO / UART","3.3 V logic"],["Relay, LED, display","via driver if needed"]],
+G2=["bytes","values","commands","3.3 V"];
+h=M("a2")+T(10,16,"Analog path","tb").replace('text-anchor="middle"','text-anchor="start"')+T(10,136,"Digital path","tb").replace('text-anchor="middle"','text-anchor="start"');
+R1.forEach(function(r,i){h+=B(X[i],30,130,60,r[0],r[1],-1);h+=B(X[i],150,130,60,R2[i][0],R2[i][1],-1);
+if(i<4){h+=A(X[i]+130,60,X[i+1],"a2")+T(X[i]+155,52,G1[i],"tm")+A(X[i]+130,180,X[i+1],"a2")+T(X[i]+155,172,G2[i],"tm")}});
+$("s-chain").innerHTML=h+Dot("M10 60H860",6,0)+Dot("M10 60H860",6,3)+Dot("M10 180H860",7,1)+Dot("M10 180H860",7,4.5);
+
+/* ---------- Closed-loop model ---------- */
+h=M("a3")+B(10,40,90,40,"Setpoint","degC",-1)+'<circle class="bx" cx="150" cy="60" r="14"/>'+T(150,64,"+ \u2212","tb")+
+B(190,40,90,40,"PID","Kp, Ki",-1)+B(310,40,90,40,"Saturation","0 to 1",-1)+B(430,40,90,40,"PWM","STM32 timer",-1)+B(550,40,110,40,"Heater","plant",-1)+
+B(560,100,90,36,"LM35","10 mV/degC",-1)+B(410,100,120,36,"ADC + Gain","x 3.3/4095 x 100",-1)+
+A(100,60,136,"a3")+A(164,60,190,"a3")+A(280,60,310,"a3")+A(400,60,430,"a3")+A(520,60,550,"a3")+
+'<path class="ar" d="M660 60H690V118H650M560 118H530M410 118H150V76" marker-end="url(#a3)"/>'+T(770,64,"Temperature out","tm")+
+T(300,100,"Feedback","tm")+Dot("M100 60H690V118H150V74",6,0);
+$("s-loop").innerHTML=h;
+
+/* ---------- Closed-loop simulation ---------- */
+var cv=$("cv"),cx=cv.getContext("2d"),W=760,H=230,N=480,hist=[],Tp=25,I=0,dist=0,acc=0,last=performance.now(),duty=0,code=0,Tm=25,e=0;
+function P(){return{sp:+$("sp").value,kp:$("kp").value/100,ki:$("ki").value/100}}
+["sp","kp","ki"].forEach(function(id){$(id).oninput=function(){var p=P();$("spv").textContent=p.sp;$("kpv").textContent=p.kp.toFixed(2);$("kiv").textContent=p.ki.toFixed(2)}});
+$("dist").onclick=function(){dist=300};
+function step(){var p=P(),dt=0.1,Tamb=dist>0?0:25;if(dist>0)dist--;
+var V=Tp*0.01+(Math.random()-0.5)*0.0016;code=Math.max(0,Math.min(4095,Math.round(V/3.3*4095)));Tm=code/4095*3.3*100;
+e=p.sp-Tm;I=Math.max(0,Math.min(1,I+p.ki*e*dt));duty=Math.max(0,Math.min(1,p.kp*e+I));
+Tp+=((Tamb-Tp)+75*duty)/8*dt;hist.push({t:Tm,d:duty*100,s:p.sp});if(hist.length>N)hist.shift()}
+function Y(v){return H-16-v*(H-32)/100}
+function draw(){cx.clearRect(0,0,W,H);cx.font="11px system-ui";cx.fillStyle="#52667a";cx.strokeStyle="#dbe6ee";cx.lineWidth=1;
+for(var v=0;v<=100;v+=25){cx.beginPath();cx.moveTo(30,Y(v));cx.lineTo(W,Y(v));cx.stroke();cx.fillText(v,4,Y(v)+4)}
+var dx=(W-30)/N;
+function line(k,col,w,dash){cx.setLineDash(dash||[]);cx.strokeStyle=col;cx.lineWidth=w;cx.beginPath();hist.forEach(function(q,i){var x=30+i*dx;i?cx.lineTo(x,Y(q[k])):cx.moveTo(x,Y(q[k]))});cx.stroke();cx.setLineDash([])}
+line("s","#52667a",1.5,[6,5]);line("d","#d9480f",2);line("t","#1c6ea4",2.5)}
+function loop(now){var d=(now-last)/1000;last=now;
+if(!paused){acc+=Math.min(d,0.1);var n=0;while(acc>=1/60&&n<6){step();acc-=1/60;n++}}
+draw();$("o-t").textContent=Tm.toFixed(1)+" \u00b0C";$("o-a").textContent=code;$("o-d").textContent=(duty*100).toFixed(0)+" %";$("o-e").textContent=e.toFixed(1)+" \u00b0C";
+requestAnimationFrame(loop)}
+requestAnimationFrame(loop);
+
+/* ---------- Interfaces ---------- */
+var L=[["ADC","LM35 / pot / LDR"],["I2C","MPU6050 / BMP280"],["SPI","IMU / SD card"],["UART","GPS / serial sensor"]],
+Rr=[["PWM (timer)","Motor driver / servo / heater"],["GPIO","Relay / LED / buzzer"],["DAC","Analog output voltage"],["UART / I2C","Display / Bluetooth"]];
+h=M("a4")+'<rect class="bx" x="340" y="15" width="220" height="270" rx="10" style="cursor:default"/>'+T(450,148,"STM32","tb").replace("12px","16px")+T(450,166,"generated C code","tm");
+L.forEach(function(r,i){var cy=50+i*70;h+='<rect class="bx" x="10" y="'+(cy-22)+'" width="200" height="44" rx="6"/>'+T(110,cy+4,r[1])+A(210,cy,340,"a4")+Dot("M210 "+cy+"H340",2.4,i*.5)+'<text class="t tb" x="350" y="'+(cy+4)+'">'+r[0]+'</text>';
+var q=Rr[i];h+='<rect class="bx" x="690" y="'+(cy-22)+'" width="200" height="44" rx="6"/>'+T(790,cy+4,q[1])+A(560,cy,690,"a4")+Dot("M560 "+cy+"H690",2.4,i*.5+.25)+'<text class="t tb" x="550" y="'+(cy+4)+'" text-anchor="end">'+q[0]+'</text>'});
+$("s-if").innerHTML=h;
+var rows=[["Interface","STM32 side","Simulink / MATLAB side","Sensor examples","Actuator examples","Watch out for"],
+["ADC","ADC1, 12-bit, 0 to 3.3 V; DMA can fill buffers","ADC block gives a code of 0 to 4095; convert with a Gain block","LM35, potentiometer, LDR divider, current sensor","None","Keep input under 3.3 V; add an RC filter for noise"],
+["GPIO","Digital input and output pins, 3.3 V","Digital Read and Digital Write blocks","Push button, limit switch, PIR","LED, relay module, buzzer","Pin current is small: use a transistor or driver"],
+["PWM","Timer channel (TIMx_CHy)","PWM output block with a duty input","None","DC motor via MOSFET or L298N, servo (50 Hz), heater","Choose the frequency; share ground with the driver"],
+["DAC","DAC channel, only on parts that have one","Analog output block where supported","None","Control voltage, audio","Not on every STM32 (for example, not on the F103C8)"],
+["I2C","I2C1, 100 kHz or 400 kHz","I2C read and write blocks","MPU6050, BMP280, SHT31","OLED display, DAC chip","4.7 k&Omega; pull-ups; every device needs a unique address"],
+["SPI","SPI1, clock in the MHz range","SPI transfer block","IMU, ADC chip, SD card","TFT display, shift register","One chip-select per device; match mode (CPOL, CPHA)"],
+["UART","USART, for example 115200 baud","Serial receive and transmit blocks","GPS, ultrasonic UART module","Display, Bluetooth module","Cross TX and RX; same baud rate; 3.3 V levels"]];
+$("tb").innerHTML=rows.map(function(r,i){var c=i?"td":"th";return"<tr>"+r.map(function(x){return"<"+c+">"+x+"</"+c+">"}).join("")+"</tr>"}).join("");
+
+/* ---------- Tabs and pause ---------- */
+var tabs=[["flow","Workflow"],["chain","Signal chain"],["loop","Closed-loop demo"],["if","Interfaces"]];
+tabs.forEach(function(o,i){var b=document.createElement("button");b.textContent=o[1];b.setAttribute("role","tab");b.setAttribute("aria-selected",i==0);
+b.onclick=function(){tabs.forEach(function(x){$("p-"+x[0]).hidden=x[0]!=o[0]});[].forEach.call($("tabs").children,function(c){c.setAttribute("aria-selected",c==b)})};$("tabs").appendChild(b)});
+tabs.forEach(function(o,i){$("p-"+o[0]).hidden=i>0});
+function setP(p){paused=p;$("pz").textContent=p?"Play animation":"Pause animation";document.querySelectorAll("svg.dg").forEach(function(s){p?s.pauseAnimations():s.unpauseAnimations()})}
+$("pz").onclick=function(){setP(!paused)};
+if(window.matchMedia&&matchMedia("(prefers-reduced-motion:reduce)").matches)setP(true);
+</script>
+</body>
+</html>

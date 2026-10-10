@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>STM32 Features and Why Choose STM32</title>
+<style>
+:root{--bg1:#0a1f4f;--bg2:#050f2b;--card:#102a5f;--line:#2d4f95;--ink:#eaf2ff;--mute:#9db6de;--acc:#5cc8ff;--hot:#ffb347}
+*{box-sizing:border-box}
+body{margin:0;color:var(--ink);font:16px/1.55 system-ui,sans-serif;background:linear-gradient(160deg,var(--bg1),var(--bg2));background-attachment:fixed}
+main{max-width:980px;margin:0 auto;padding:26px 16px 60px}
+header{display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px;align-items:flex-start}
+h1{font:700 clamp(1.6rem,4vw,2.3rem)/1.2 Georgia,serif;margin:0 0 6px}
+h1 em{font-style:normal;color:var(--acc)}
+h2{font:700 1.3rem Georgia,serif;margin:34px 0 10px;color:#fff}
+p{margin:0 0 10px;max-width:72ch}.lead,.mute{color:var(--mute)}
+button{font:600 .9rem system-ui;color:var(--ink);cursor:pointer}
+button:focus-visible,.b:focus-visible{outline:3px solid var(--hot);outline-offset:2px}
+#pz{padding:8px 12px;border:1px solid var(--line);background:var(--card);border-radius:6px}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px}
+svg.dg{width:100%;height:auto;display:block}
+.b{cursor:pointer}.b rect{fill:#143577;stroke:#5cc8ff;stroke-width:2;transition:fill .2s}
+.b.on rect{fill:#ffb347;stroke:#ffb347}.b.on text{fill:#04204a}
+svg text{font:13px system-ui,sans-serif;fill:#eaf2ff}.tb{font-weight:700}
+.ln{stroke:#2d4f95;stroke-width:1.5;fill:none}
+.core{fill:#0a1f4f;stroke:#ffb347;stroke-width:2.5;animation:pulse 3s ease-in-out infinite}
+@keyframes pulse{50%{stroke-width:5}}
+#pd{margin-top:10px;padding:10px 14px;border-left:4px solid var(--hot);background:rgba(255,179,71,.1);min-height:3.4em}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+.card b{display:block;color:var(--acc);margin-bottom:2px}
+.card p{margin:0;font-size:.92rem;color:var(--mute)}
+.card .n{color:var(--hot);font:700 .75rem system-ui;letter-spacing:.08em}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+.chips button{padding:8px 12px;border:1px solid var(--line);background:rgba(16,42,95,.7);border-radius:20px}
+.chips button[aria-pressed=true]{background:var(--acc);color:#04204a;border-color:var(--acc)}
+.ex{display:grid;grid-template-columns:1fr 1.2fr;gap:16px}
+@media(max-width:720px){.ex{grid-template-columns:1fr}}
+.ex h3{margin:0 0 4px;font:700 1.25rem Georgia,serif;color:var(--hot)}
+.bar{margin:0 0 10px;font-size:.88rem}
+.bar span{display:flex;justify-content:space-between;color:var(--mute)}
+.bar div{height:14px;border-radius:7px;background:#07173d;border:1px solid var(--line);overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#2b8cd9,#5cc8ff);transition:width .7s cubic-bezier(.2,.8,.2,1)}
+#why{margin-top:12px;padding:10px 14px;border-left:4px solid var(--acc);background:rgba(92,200,255,.1);min-height:3.4em}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:.88rem;min-width:640px}
+th,td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+th{background:#143577}td:first-child{font-weight:700;color:var(--acc)}tr.me td{background:rgba(255,179,71,.12)}
+.note{font-size:.82rem;color:var(--mute)}
+@media (prefers-reduced-motion:reduce){.core{animation:none}.bar i,.b rect{transition:none}}
+</style>
+</head>
+<body>
+<main>
+<header>
+<div><h1>STM32 features and <em>why STM32?</em></h1>
+<p class="lead">STM32 is a large family of 32-bit ARM Cortex-M microcontrollers from STMicroelectronics. One family covers everything from tiny low-cost chips to fast, secure and wireless ones. Click and explore.</p></div>
+<button id="pz">Pause animation</button>
+</header>
+
+<h2>1. What is inside an STM32</h2>
+<div class="panel">
+<svg class="dg" id="s-chip" viewBox="0 0 760 340" role="img" aria-label="STM32 core surrounded by peripherals"></svg>
+<div id="pd" aria-live="polite">Click a peripheral to see what it does. Dots show data moving in and out of the core.</div>
+<p class="note" style="margin:8px 0 0">The exact peripheral mix depends on the part number. Check the datasheet of your chip.</p>
+</div>
+
+<h2>2. Main features</h2>
+<div class="grid" id="feat"></div>
+
+<h2>3. Pick a family: STM32 series explorer</h2>
+<p class="mute">Choose what you need, or click a series. The bars are a qualitative guide, not datasheet values.</p>
+<div class="chips" id="sc" role="group" aria-label="What do you need"></div>
+<div class="panel ex">
+<div><div class="chips" id="sr" role="group" aria-label="Series"></div><h3 id="sn"></h3><p class="mute" id="sk"></p><p id="sd"></p><p><b>Typical use:</b> <span id="su"></span></p></div>
+<div id="bars"></div>
+</div>
+<div id="why"></div>
+
+<h2>4. Why choose STM32?</h2>
+<div class="grid" id="reasons"></div>
+
+<h2>5. How STM32 compares</h2>
+<div class="scroll"><table id="cmp"></table></div>
+<p class="note" style="margin-top:8px">Typical values for common example parts. Other parts in each family differ.</p>
+<div class="panel" style="margin-top:14px"><b>When another choice may fit better:</b> an ESP32 is usually easier when Wi-Fi is the main need, an Arduino Uno has the lowest barrier for absolute beginners, and a Raspberry Pi Pico is a simple, low-cost 32-bit start. STM32 shines when you want a scalable, well-supported professional path.</div>
+</main>
+
+<script>
+var $=function(i){return document.getElementById(i)},paused=false;
+/* ---- chip diagram ---- */
+var PER=[["ADC","12-bit (some parts up to 16-bit) converters read analog sensors."],["DAC","Creates analog voltages, on parts that include a DAC."],["Timers / PWM","General and advanced timers for PWM, motor control, encoders and input capture."],["DMA","Moves data between memory and peripherals without using the CPU."],
+["UART","Serial links to PCs, GPS and modules."],["SPI","Fast links to displays, SD cards and sensors."],["I2C","Two-wire bus shared by many sensors."],["CAN / CAN FD","Vehicle and industrial networks, on selected parts."],
+["USB","USB device (and host on some parts), on selected parts."],["Ethernet*","Wired networking on selected parts. *Not on every STM32."]];
+var pos=[[20,15],[200,15],[380,15],[560,15],[20,285],[200,285],[380,285],[560,285],[20,150],[620,150]],h="",i;
+h+='<rect class="core" x="260" y="110" width="240" height="120" rx="10"/><text class="tb" x="380" y="155" text-anchor="middle" style="font-size:20px">STM32</text><text x="380" y="178" text-anchor="middle">Cortex-M core</text><text x="380" y="198" text-anchor="middle">Flash + SRAM + GPIO</text>';
+PER.forEach(function(p,k){var x=pos[k][0],y=pos[k][1],w=k==9?120:(k==8?120:150),cx=x+w/2,cy=y+20,sx,sy,ex,ey;
+ if(k<4){sx=cx;sy=55;ex=Math.max(285,Math.min(475,cx));ey=110}
+ else if(k<8){sx=cx;sy=285;ex=Math.max(285,Math.min(475,cx));ey=230}
+ else if(k==8){sx=140;sy=170;ex=260;ey=170}else{sx=620;sy=170;ex=500;ey=170}
+ var d="M"+sx+" "+sy+"L"+ex+" "+ey,r=k%2?d:d;
+ h+='<path class="ln" d="'+d+'"/><circle r="4.5" fill="#5cc8ff"><animateMotion dur="2.6s" begin="'+(k*.3)+'s" repeatCount="indefinite" path="'+d+'"/></circle>';
+ h+='<circle r="4.5" fill="#ffb347"><animateMotion dur="2.6s" begin="'+(k*.3+1.3)+'s" repeatCount="indefinite" path="M'+ex+' '+ey+'L'+sx+' '+sy+'"/></circle>';
+ h+='<g class="b" tabindex="0" data-k="'+k+'"><rect x="'+x+'" y="'+y+'" width="'+w+'" height="40" rx="6"/><text class="tb" x="'+cx+'" y="'+(y+25)+'" text-anchor="middle">'+p[0]+'</text></g>'});
+$("s-chip").innerHTML=h;
+var gb=$("s-chip").querySelectorAll(".b");
+gb.forEach(function(g){function f(){gb.forEach(function(x){x.classList.remove("on")});g.classList.add("on");var p=PER[g.dataset.k];$("pd").innerHTML="<b>"+p[0]+":</b> "+p[1]}
+ g.onclick=f;g.onkeydown=function(e){if(e.key=="Enter"||e.key==" "){e.preventDefault();f()}}});
+/* ---- feature cards ---- */
+var F=[["Arm Cortex-M cores","From low-power Cortex-M0+ to high-performance Cortex-M7, plus M33 with security. Some models add a floating-point unit (FPU) and DSP instructions."],
+["Scalable performance","Clock speeds range from tens of MHz up to hundreds of MHz across the family, with a wide range of Flash and RAM sizes."],
+["Rich peripherals","ADC, DAC, many timers, DMA, UART, SPI, I2C, CAN, USB and more, depending on the part."],
+["Low-power modes","Sleep, Stop and Standby modes let battery devices run for long periods. Ultra-low-power L and U series are built for this."],
+["Security","Hardware crypto, secure boot options and Arm TrustZone on Cortex-M33 parts such as the U series."],
+["Built-in wireless","STM32WB and WBA add Bluetooth Low Energy; STM32WL adds LoRa."],
+["Edge AI","Tools such as STM32Cube.AI run neural networks on STM32, and newer parts like the STM32N6 add an AI accelerator."],
+["Ecosystem","Free STM32CubeMX and CubeIDE, HAL drivers, affordable Nucleo boards, ST-LINK debugging and strong community support."]];
+$("feat").innerHTML=F.map(function(f,i){return'<div class="card"><span class="n">0'+(i+1)+'</span><b>'+f[0]+'</b><p>'+f[1]+'</p></div>'}).join("");
+/* ---- series explorer ---- */
+var SR={C0:["STM32C0","Cortex-M0+","Entry-level and very low cost. Good for simple control, appliances and learning basics.",1,3,1,5,"Simple switch and sensor control"],
+G:["STM32G0 / G4","Cortex-M0+ (G0), Cortex-M4 (G4)","Mainstream and cost-effective. G4 adds math accelerators and advanced analog for motor control and digital power.",3,3,3,4,"Motor drives, power supplies"],
+F:["STM32F","Cortex-M0 to M7","The classic mainstream line with the widest community support and the most tutorials.",3,2,4,3,"General embedded projects, learning"],
+L:["STM32L","Cortex-M0+ to M33","Ultra-low-power for battery devices that sleep most of the time.",2,5,3,3,"Battery sensor nodes, wearables, meters"],
+U:["STM32U","Cortex-M33","Ultra-low-power with security (TrustZone) and more memory and performance than the L series.",3,5,4,2,"Secure low-power devices"],
+H:["STM32H","Cortex-M7 / M33","High performance for graphics, audio, fast control and demanding processing.",5,1,5,1,"Displays, vision, fast signal processing"],
+W:["STM32WB / WL / WBA","Cortex-M0+ / M4 / M33 plus radio","Built-in wireless: Bluetooth Low Energy (WB, WBA) and LoRa (WL).",2,4,3,2,"BLE gadgets, LoRa sensors"]};
+var SC=[["Run a motor","G","Advanced timers and fast ADC on the G and F lines suit motor control. G4 adds math accelerators."],
+["Battery sensor for years","L","The L and U lines draw very little current in sleep modes, which stretches battery life."],
+["Bluetooth device","W","STM32WB has a Bluetooth Low Energy radio built in, so you need no separate radio chip."],
+["Camera, display or AI","H","The H series gives the speed and memory. Also look at the newer STM32N6 for AI acceleration."],
+["Secure device","U","The U series adds Arm TrustZone and security features on a low-power chip."],
+["Learn embedded basics","F","The F series has the most tutorials and examples. A Nucleo board with an F4 chip is a common start."],
+["Lowest cost","C0","The C0 line targets cost-sensitive designs with simple control tasks."]];
+var BL=["Performance","Low power","Peripherals and features","Low cost"];
+$("bars").innerHTML=BL.map(function(l,i){return'<div class="bar"><span>'+l+'<b id="bv'+i+'"></b></span><div><i id="bf'+i+'"></i></div></div>'}).join("");
+function pick(k){var s=SR[k];$("sn").textContent=s[0];$("sk").textContent=s[1];$("sd").textContent=s[2];$("su").textContent=s[7];
+ for(var i=0;i<4;i++){$("bf"+i).style.width=(s[3+i]*20)+"%";$("bv"+i).textContent=s[3+i]+" / 5"}
+ [].forEach.call($("sr").children,function(b){b.setAttribute("aria-pressed",b.dataset.k==k)})}
+Object.keys(SR).forEach(function(k){var b=document.createElement("button");b.textContent=SR[k][0].split(" ")[0];b.dataset.k=k;b.setAttribute("aria-pressed","false");b.onclick=function(){pick(k);$("why").textContent="";[].forEach.call($("sc").children,function(c){c.setAttribute("aria-pressed","false")})};$("sr").appendChild(b)});
+SC.forEach(function(s){var b=document.createElement("button");b.textContent=s[0];b.setAttribute("aria-pressed","false");
+ b.onclick=function(){pick(s[1]);[].forEach.call($("sc").children,function(c){c.setAttribute("aria-pressed",c==b)});$("why").innerHTML="<b>"+s[0]+":</b> "+s[2]};$("sc").appendChild(b)});
+pick("F");
+/* ---- reasons + table ---- */
+var R=[["One family, many sizes","Start on a small chip and move up to a faster one using the same tools, drivers and many of the same pin layouts."],
+["Free, official tools","STM32CubeMX and CubeIDE generate setup code and include a debugger at no cost."],
+["Rich peripherals for the price","Timers, ADCs, DMA and communication buses that simple 8-bit boards often lack."],
+["Low-power options","Dedicated ultra-low-power lines for battery products."],
+["Cheap boards and ST-LINK","Nucleo boards include a programmer and debugger, so you need no extra hardware."],
+["Industry use and long supply","Widely used in industrial, automotive, medical and consumer products. ST runs a longevity program for many parts."],
+["Works with MATLAB and Simulink","A support package lets you build model-based designs and generate code for STM32 boards."],
+["Large community","Many tutorials, forums, libraries and example projects to learn from."]];
+$("reasons").innerHTML=R.map(function(r,i){return'<div class="card"><span class="n">'+(i+1)+'</span><b>'+r[0]+'</b><p>'+r[1]+'</p></div>'}).join("");
+var C=[["Platform","Core","Typical clock","ADC","Wireless built in","Best for"],
+["Arduino Uno (ATmega328P)","8-bit AVR","16 MHz","10-bit","No","First steps, simple projects"],
+["ESP32","32-bit Xtensa, dual-core","Up to 240 MHz","12-bit","Wi-Fi and Bluetooth","IoT with Wi-Fi"],
+["Raspberry Pi Pico (RP2040)","Dual Cortex-M0+","133 MHz","12-bit","No (Pico W adds Wi-Fi)","Low-cost 32-bit learning"],
+["STM32 (example: F4 series)","Cortex-M4 with FPU","Up to 180 MHz","12-bit","No (WB and WL lines add it)","Control, industry, scalable products"]];
+$("cmp").innerHTML=C.map(function(r,i){var c=i?"td":"th";return'<tr'+(i==4?' class="me"':'')+'>'+r.map(function(x){return"<"+c+">"+x+"</"+c+">"}).join("")+"</tr>"}).join("");
+/* ---- pause ---- */
+function setP(p){paused=p;$("pz").textContent=p?"Play animation":"Pause animation";$("s-chip").classList.toggle("p",p);p?$("s-chip").pauseAnimations():$("s-chip").unpauseAnimations();$("s-chip").querySelector(".core").style.animationPlayState=p?"paused":"running"}
+$("pz").onclick=function(){setP(!paused)};
+if(window.matchMedia&&matchMedia("(prefers-reduced-motion:reduce)").matches)setP(true);
+</script>
+</body>
+</html>

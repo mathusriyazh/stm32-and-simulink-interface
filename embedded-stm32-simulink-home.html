@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Embedded Systems: STM32 with Simulink Interface</title>
+<style>
+:root{--bg1:#0a1f4f;--bg2:#050f2b;--card:#102a5f;--line:#2d4f95;--ink:#eaf2ff;--mute:#9db6de;--acc:#5cc8ff;--hot:#ffb347}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%}
+body{color:var(--ink);font:16px/1.55 system-ui,sans-serif;
+background:radial-gradient(circle at 80% -10%,#17409a 0,transparent 45%),linear-gradient(160deg,var(--bg1),var(--bg2));background-attachment:fixed}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.35;
+background-image:linear-gradient(rgba(92,200,255,.08) 1px,transparent 1px),linear-gradient(90deg,rgba(92,200,255,.08) 1px,transparent 1px);background-size:32px 32px}
+.wrap{position:relative;max-width:1000px;margin:0 auto;padding:22px 18px 50px}
+.top{display:flex;flex-wrap:wrap;gap:18px;align-items:center;padding-bottom:18px;border-bottom:1px solid var(--line)}
+#logo{width:84px;height:84px;flex:none;border-radius:12px;background:#fff;padding:6px;display:grid;place-items:center}
+#logo img,#logo svg{max-width:100%;max-height:100%;display:block}
+.who{flex:1;min-width:230px}
+.who b{display:block;font:700 1.15rem Georgia,serif}
+.who span{display:block;color:var(--mute);font-size:.95rem}
+.who .u{color:var(--ink);font-weight:600}
+h1{font:700 clamp(1.7rem,4.5vw,2.6rem)/1.15 Georgia,serif;margin:30px 0 8px}
+h1 em{font-style:normal;color:var(--acc)}
+.lead{color:var(--mute);max-width:66ch;margin:0 0 6px}
+.chain{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:20px 0 26px;font-size:.88rem}
+.chain span{border:1px solid var(--line);border-radius:6px;padding:5px 10px;background:rgba(16,42,95,.7);animation:glow 6s infinite}
+.chain span:nth-child(3){animation-delay:1s}.chain span:nth-child(5){animation-delay:2s}.chain span:nth-child(7){animation-delay:3s}.chain span:nth-child(9){animation-delay:4s}
+.chain i{color:var(--acc);font-style:normal}
+@keyframes glow{0%,15%{background:var(--acc);color:#04204a;border-color:var(--acc)}20%,100%{background:rgba(16,42,95,.7);color:var(--ink)}}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
+.card{display:flex;flex-direction:column;gap:6px;text-align:left;font:inherit;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:10px;padding:18px;cursor:pointer;transition:transform .15s,border-color .15s}
+.card:hover{transform:translateY(-3px);border-color:var(--acc)}
+.card:focus-visible,.bar button:focus-visible,.bar a:focus-visible{outline:3px solid var(--hot);outline-offset:2px}
+.card .n{font:700 .8rem system-ui;color:var(--hot);letter-spacing:.08em}
+.card h2{font:700 1.15rem Georgia,serif;margin:0}
+.card p{margin:0;color:var(--mute);font-size:.92rem}
+.card .go{margin-top:auto;padding-top:8px;color:var(--acc);font-weight:600;font-size:.9rem}
+.note{margin-top:26px;color:var(--mute);font-size:.82rem}
+footer{margin-top:34px;padding-top:14px;border-top:1px solid var(--line);color:var(--mute);font-size:.85rem}
+#viewer{position:fixed;inset:0;z-index:5;background:var(--bg2);display:none;flex-direction:column}
+#viewer.on{display:flex}
+.bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:8px 12px;background:var(--bg1);border-bottom:1px solid var(--line)}
+.bar button,.bar a{font:600 .9rem system-ui;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:6px;padding:7px 12px;text-decoration:none;cursor:pointer}
+.bar strong{flex:1;font-size:.95rem}
+#fr{flex:1;width:100%;border:0;background:#f4f8fb}
+@media (prefers-reduced-motion:reduce){.chain span{animation:none}.card{transition:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="top">
+<div id="logo" aria-label="SASTRA logo"></div>
+<div class="who">
+<b id="a-name"></b>
+<span id="a-dept"></span>
+<span class="u" id="a-univ"></span>
+<span id="a-place"></span>
+</div>
+</div>
+
+<h1>Embedded Systems: <em>STM32</em> with Simulink Interface</h1>
+<p class="lead">Learn how sensors and actuators connect to an STM32 microcontroller and how a Simulink model becomes running code. Choose a topic to open it.</p>
+
+<div class="chain" aria-hidden="true"><span>Sensor</span><i>&rarr;</i><span>ADC</span><i>&rarr;</i><span>STM32 + Simulink code</span><i>&rarr;</i><span>PWM / GPIO</span><i>&rarr;</i><span>Actuator</span></div>
+
+<div class="grid" id="grid"></div>
+<p class="note"></p>
+<footer id="foot"></footer>
+</div>
+
+<div id="viewer" role="dialog" aria-label="Topic viewer">
+<div class="bar"><button id="back">&larr; Back to topics</button><strong id="vt"></strong><a id="nt" target="_blank" rel="noopener">Open in new tab</a></div>
+<iframe id="fr" title="Topic content"></iframe>
+</div>
+
+<script>
+/* ===== CONFIG: edit these ===== */
+var CFG={
+ author:"Dr. R. Sriranjani",
+ dept:"SEEE, School of Electrical and Electronics Engineering",
+ univ:"SASTRA Deemed University",
+ place:"Thanjavur, Tamil Nadu, India",
+ logo:"logo.png"   /* put the official logo file in this folder */
+};
+var FILES=[
+ {t:"Why Embedded system",d:"Clickable Without controller, with speed controller, Sensor based control, IoT control FAN.",f:"embedded_systems_evolution.html"},
+ {t:"Embedded system block diagram",d:"Clickable block diagram: sensors, ADC, microcontroller, memory, clock, DAC, actuators, communication and power.",f:"embedded-system-functions.html"},
+ {t:"ADC, DAC, clock and specifications",d:"Animated ADC and DAC demos, clock waveform, and tables for sensors, STM32 and other MCUs, memory, actuators, communication and power.",f:"embedded-system-animated.html"},
+ {t:"Why STM32",d:"STM32 Block diagram, Features, STM32 family, comparison with other board.",f:"stm32-features-why.html"},
+{t:"Why STM32F103C6T6",d:"STM32F series Features, STM32 family, comparison with other board.",f:"stm32f103c6t6-why.html"},
+{t:"How to choose the board",d:"Selection of board.",f:"choose-the-right-board.html"},
+
+ {t:"MATLAB, Simulink and STM32 interface",d:"Workflow from MATLAB to STM32, signal chain, live closed-loop temperature control and the sensor and actuator interface table.",f:"matlab-simulink-stm32.html"},
+ ];
+/* ===== end CONFIG ===== */
+
+var $=function(i){return document.getElementById(i)};
+$("a-name").textContent="Author: "+CFG.author;$("a-dept").textContent=CFG.dept;$("a-univ").textContent=CFG.univ;$("a-place").textContent=CFG.place;
+$("foot").textContent=CFG.author+" \u00b7 "+CFG.univ+", "+CFG.place;
+/* logo: uses the image file; shows a placeholder crest if the file is missing */
+var fallback='<svg viewBox="0 0 72 72" role="img" aria-label="Logo placeholder"><circle cx="36" cy="36" r="33" fill="#0a1f4f"/><circle cx="36" cy="36" r="27" fill="none" stroke="#ffb347" stroke-width="2"/><text x="36" y="43" text-anchor="middle" font-family="Georgia,serif" font-weight="700" font-size="17" fill="#fff">SASTRA</text></svg>';
+var img=new Image();img.alt="SASTRA logo";img.onerror=function(){$("logo").innerHTML=fallback};img.src=CFG.logo;$("logo").appendChild(img);
+
+FILES.forEach(function(x,i){var b=document.createElement("button");b.className="card";
+ b.innerHTML='<span class="n">TOPIC '+(i+1)+'</span><h2></h2><p></p><span class="go">Open &rarr;</span>';
+ b.querySelector("h2").textContent=x.t;b.querySelector("p").textContent=x.d;b.onclick=function(){openF(i)};$("grid").appendChild(b)});
+function openF(i){var x=FILES[i];$("vt").textContent=x.t;$("fr").src=x.f;$("nt").href=x.f;$("viewer").classList.add("on");
+ try{history.replaceState(null,"","#"+i)}catch(e){}$("back").focus()}
+function closeF(){$("viewer").classList.remove("on");$("fr").src="about:blank";try{history.replaceState(null,"",location.pathname)}catch(e){}}
+$("back").onclick=closeF;
+document.addEventListener("keydown",function(e){if(e.key=="Escape"&&$("viewer").classList.contains("on"))closeF()});
+var h=parseInt(location.hash.slice(1),10);if(h>=0&&h<FILES.length)openF(h);
+</script>
+</body>
+</html>

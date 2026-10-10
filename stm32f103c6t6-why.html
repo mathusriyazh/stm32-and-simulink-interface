@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>STM32F103C6T6: What It Is and Why Use It</title>
+<style>
+:root{--bg1:#0a1f4f;--bg2:#050f2b;--card:#102a5f;--line:#2d4f95;--ink:#eaf2ff;--mute:#9db6de;--acc:#5cc8ff;--hot:#ffb347;--ok:#6be08f;--no:#ff7b7b}
+*{box-sizing:border-box}
+body{margin:0;color:var(--ink);font:16px/1.55 system-ui,sans-serif;background:linear-gradient(160deg,var(--bg1),var(--bg2));background-attachment:fixed}
+main{max-width:980px;margin:0 auto;padding:26px 16px 60px}
+header{display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px;align-items:flex-start}
+h1{font:700 clamp(1.5rem,4vw,2.2rem)/1.2 Georgia,serif;margin:0 0 6px}
+h1 em{font-style:normal;color:var(--acc)}
+h2{font:700 1.3rem Georgia,serif;margin:34px 0 10px;color:#fff}
+p{margin:0 0 10px;max-width:72ch}.lead,.mute{color:var(--mute)}
+button,select{font:600 .9rem system-ui;color:var(--ink);cursor:pointer}
+button:focus-visible,.b:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--hot);outline-offset:2px}
+#pz{padding:8px 12px;border:1px solid var(--line);background:var(--card);border-radius:6px}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px}
+.info{margin-top:10px;padding:10px 14px;border-left:4px solid var(--hot);background:rgba(255,179,71,.1);min-height:3.4em}
+.dec{display:flex;flex-wrap:wrap;gap:6px;font:700 clamp(1.3rem,5vw,2.2rem) ui-monospace,Consolas,monospace}
+.dec button{font:inherit;padding:8px 12px;border:2px solid var(--line);border-radius:8px;background:#07173d;transition:background .25s}
+.dec button small{display:block;font:600 .65rem system-ui;color:var(--mute);letter-spacing:.06em}
+.dec button.on{background:var(--hot);color:#04204a;border-color:var(--hot)}.dec button.on small{color:#04204a}
+svg.dg{width:100%;height:auto;display:block}
+svg text{font:12.5px system-ui,sans-serif;fill:#eaf2ff}.tb{font-weight:700}
+.b{cursor:pointer}.b rect{fill:#143577;stroke:#5cc8ff;stroke-width:2;transition:fill .2s}.b.on rect{fill:#ffb347;stroke:#ffb347}.b.on text{fill:#04204a}
+.ln{stroke:#5cc8ff;stroke-width:3;fill:none}.ln2{stroke:#2d4f95;stroke-width:2;fill:none}
+.core rect{fill:#0a1f4f;stroke:#ffb347;stroke-width:2.5;animation:pulse 3s ease-in-out infinite}
+@keyframes pulse{50%{stroke-width:5}}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+.card b{display:block;margin-bottom:2px;color:var(--acc)}.card.no b{color:var(--hot)}
+.card p{margin:0;font-size:.92rem;color:var(--mute)}
+.chips{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.chips button{padding:8px 14px;border:1px solid var(--line);background:rgba(16,42,95,.7);border-radius:20px}
+.chips button[aria-pressed=true]{background:var(--acc);color:#04204a;border-color:var(--acc)}
+.bar{margin:0 0 10px;font-size:.9rem}.bar span{display:flex;justify-content:space-between;color:var(--mute)}.bar span b{color:var(--ink)}
+.bar div{height:14px;border-radius:7px;background:#07173d;border:1px solid var(--line);overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#2b8cd9,#5cc8ff);transition:width .7s cubic-bezier(.2,.8,.2,1)}
+.fit{display:grid;grid-template-columns:minmax(230px,320px) 1fr;gap:18px}
+@media(max-width:720px){.fit{grid-template-columns:1fr}}
+.fit label{display:block;margin:0 0 12px;font-size:.9rem}
+.fit input[type=range]{width:100%;display:block}
+.fit select{padding:6px;background:#0a1f4f;border:1px solid var(--line);border-radius:6px;margin-left:6px}
+.res{display:grid;gap:10px}
+.r{border:2px solid var(--line);border-radius:10px;padding:10px 14px;background:#07173d;transition:border-color .3s,background .3s}
+.r.ok{border-color:var(--ok);background:rgba(107,224,143,.1)}.r.no{border-color:var(--no);background:rgba(255,123,123,.08)}
+.r b{display:flex;justify-content:space-between;gap:8px}.r small{color:var(--mute)}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:.88rem;min-width:520px}
+th,td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+th{background:#143577}td:first-child{font-weight:700;color:var(--acc)}
+.note{font-size:.82rem;color:var(--mute)}
+@media (prefers-reduced-motion:reduce){.core rect{animation:none}.bar i,.b rect,.r,.dec button{transition:none}}
+</style>
+</head>
+<body>
+<main>
+<header>
+<div><h1>STM32F103C6T6: <em>why use it?</em></h1>
+<p class="lead">A low-cost 72 MHz Cortex-M3 microcontroller in a 48-pin package. It is a smaller-memory sibling of the popular STM32F103C8T6 used on Blue Pill boards. See what the name means, what is inside, and whether it fits your project.</p></div>
+<button id="pz">Pause animation</button>
+</header>
+
+<h2>1. Decode the part number</h2>
+<div class="panel">
+<div class="dec" id="dec" role="group" aria-label="Part number segments"></div>
+<div class="info" id="di" aria-live="polite"></div>
+</div>
+
+<h2>2. Inside the chip</h2>
+<div class="panel">
+<svg class="dg" id="s-chip" viewBox="0 0 760 300" role="img" aria-label="Cortex-M3 core, memory, buses and peripherals"></svg>
+<div class="info" id="pd" aria-live="polite">Click a block. Dots show data travelling over the buses: the fast APB2 bus (up to 72 MHz) and the slower APB1 bus (up to 36 MHz).</div>
+</div>
+
+<h2>3. Key specifications</h2>
+<div class="scroll"><table id="spec"></table></div>
+<p class="note" style="margin-top:6px">Summarised from the STM32F103x4/x6 datasheet. Always confirm in ST's current datasheet.</p>
+
+<h2>4. Why choose it, and why not</h2>
+<div class="grid" id="why"></div>
+
+<h2>5. Compare with its bigger siblings</h2>
+<div class="panel">
+<div class="chips" id="vs" role="group" aria-label="Variant"></div>
+<div id="bars"></div>
+<p class="note" style="margin:0">Bars are scaled to the F103CB (the largest of the three). Same 48-pin package.</p>
+</div>
+
+<h2>6. Will my project fit?</h2>
+<div class="panel fit">
+<div>
+<label>Program size: <b id="kv">20</b> KB<input type="range" id="fk" min="4" max="140" value="20"></label>
+<label>RAM needed: <b id="rv">6</b> KB<input type="range" id="fr" min="1" max="22" value="6"></label>
+<label>UARTs <select id="fu"><option>0</option><option selected>1</option><option>2</option><option>3</option></select></label>
+<label>SPI ports <select id="fs"><option>0</option><option selected>1</option><option>2</option></select></label>
+<label>I2C buses <select id="fi"><option>0</option><option selected>1</option><option>2</option></select></label>
+<label>Timers used <select id="ft"><option>1</option><option>2</option><option selected>3</option><option>4</option></select></label>
+</div>
+<div class="res" id="res" aria-live="polite"></div>
+</div>
+<p class="note" style="margin-top:8px">Check real sizes in STM32CubeIDE (Build Analyzer after building). HAL libraries use a noticeable amount of Flash, and keep about 20 % spare for growth.</p>
+</main>
+
+<script>
+var $=function(i){return document.getElementById(i)},paused=false;
+/* ---- 1 decoder ---- */
+var D=[["STM32","family","STMicroelectronics 32-bit Arm Cortex-M microcontroller family."],
+["F","type","General-purpose line (F series)."],
+["103","line","Performance line: Cortex-M3 core, up to 72 MHz, with USB and CAN."],
+["C","pins","48 pins."],
+["6","flash","32 KB Flash. (8 means 64 KB and B means 128 KB.)"],
+["T","package","LQFP package (a flat square package with legs, easy to solder by hand)."],
+["6","temperature","Operating temperature range of \u221240 to +85 \u00b0C. (7 means \u221240 to +105 \u00b0C.)"]];
+var cur=0,hold=false;
+D.forEach(function(d,i){var b=document.createElement("button");b.innerHTML=d[0]+"<small>"+d[1].toUpperCase()+"</small>";b.onclick=function(){go(i);hold=true;setTimeout(function(){hold=false},9000)};$("dec").appendChild(b)});
+function go(i){cur=i;[].forEach.call($("dec").children,function(b,k){b.classList.toggle("on",k==i)});$("di").innerHTML="<b>"+D[i][0]+" ("+D[i][1]+"):</b> "+D[i][2]}
+go(0);setInterval(function(){if(!hold&&!paused)go((cur+1)%7)},2600);
+/* ---- 2 chip diagram ---- */
+function Bx(x,y,w,h,t,k,c){return '<g class="b'+(c?" core":"")+'" tabindex="0" data-k="'+k+'"><rect x="'+x+'" y="'+y+'" width="'+w+'" height="'+h+'" rx="6"/><text class="tb" x="'+(x+w/2)+'" y="'+(y+h/2+4)+'" text-anchor="middle">'+t+'</text></g>'}
+function Dt(p,d,b,c){return '<circle r="4.5" fill="'+c+'"><animateMotion dur="'+d+'s" begin="'+b+'s" repeatCount="indefinite" path="'+p+'"/></circle>'}
+var IN={core:["Cortex-M3 core","32-bit Arm core at up to 72 MHz. It has no floating-point unit, so float math is done in software and is slower."],
+fl:["32 KB Flash","Stores your program. This is the smallest Flash size in the F103 low and medium density range."],
+sr:["10 KB SRAM","Variables, stack and buffers. Lost when power is removed."],
+dma:["DMA","Moves data between memory and peripherals without using the CPU."],
+gp:["GPIO ports","Up to 37 I/O pins on the 48-pin package: PA0 to PA15, PB0 to PB15, PC13 to PC15 and PD0, PD1. Many pins tolerate 5 V, but check the datasheet for each pin."],
+t1:["TIM1","Advanced-control timer: PWM with complementary outputs and dead time for motor control."],
+ad:["ADC1 and ADC2","Two 12-bit ADCs, about 1 \u00b5s conversion time, up to 10 external channels."],
+u1:["USART1","Serial port on the fast APB2 bus."],
+sp:["SPI1","One SPI port for displays, SD cards and sensors."],
+t2:["TIM2 and TIM3","General-purpose 16-bit timers: PWM, input capture, encoder interface and time base."],
+u2:["USART2","Second serial port on the APB1 bus."],
+ic:["I2C1","One I2C bus for sensors and small displays."],
+us:["USB","USB 2.0 full-speed device (12 Mbit/s). It shares memory with CAN, so use one at a time."],
+cn:["CAN","CAN 2.0B interface for vehicle and industrial networks."]};
+var h=Bx(20,15,130,44,"Cortex-M3 72 MHz","core",1)+Bx(20,80,130,40,"32 KB Flash","fl")+Bx(20,140,130,40,"10 KB SRAM","sr")+Bx(20,200,130,40,"DMA (7 ch)","dma");
+h+='<path class="ln" d="M185 20V245"/><path class="ln2" d="M150 37H185M150 100H185M150 160H185M150 220H185"/>';
+h+='<text x="178" y="268" text-anchor="end" style="fill:#9db6de">AHB bus</text>';
+h+='<path class="ln" d="M185 85H745"/><text x="215" y="104" style="fill:#9db6de">APB2 bus (up to 72 MHz)</text>';
+h+='<path class="ln" d="M185 205H745"/><text x="215" y="196" style="fill:#9db6de">APB1 bus (up to 36 MHz)</text>';
+var a2=[["GPIO A-D","gp"],["TIM1","t1"],["ADC1 + 2","ad"],["USART1","u1"],["SPI1","sp"]],a1=[["TIM2 + 3","t2"],["USART2","u2"],["I2C1","ic"],["USB","us"],["CAN","cn"]];
+a2.forEach(function(p,i){var x=215+i*108;h+='<path class="ln2" d="M'+(x+50)+' 55V85"/>'+Bx(x,15,100,40,p[0],p[1])});
+a1.forEach(function(p,i){var x=215+i*108;h+='<path class="ln2" d="M'+(x+50)+' 205V235"/>'+Bx(x,235,100,40,p[0],p[1])});
+h+=Dt("M150 37H185V85H745",3.5,0,"#5cc8ff")+Dt("M150 37H185V205H745",4.2,1,"#ffb347")+Dt("M150 100H185V37H150",2.4,.5,"#6be08f")+Dt("M150 160H185V37H150",2.8,1.2,"#6be08f")+Dt("M745 85H185V37H150",3.8,2,"#5cc8ff");
+$("s-chip").innerHTML=h;
+var gb=$("s-chip").querySelectorAll(".b");
+gb.forEach(function(g){function f(){gb.forEach(function(x){x.classList.remove("on")});g.classList.add("on");var p=IN[g.dataset.k];$("pd").innerHTML="<b>"+p[0]+":</b> "+p[1]}
+g.onclick=f;g.onkeydown=function(e){if(e.key=="Enter"||e.key==" "){e.preventDefault();f()}}});
+/* ---- 3 spec table ---- */
+function tb(id,rows){$(id).innerHTML=rows.map(function(r,i){var c=i?"td":"th";return"<tr>"+r.map(function(x){return"<"+c+">"+x+"</"+c+">"}).join("")+"</tr>"}).join("")}
+tb("spec",[["Item","STM32F103C6T6"],["Core","Arm Cortex-M3, up to 72 MHz (no FPU)"],["Memory","32 KB Flash, 10 KB SRAM"],["Supply","2.0 to 3.6 V"],["Package","LQFP48, up to 37 I/O pins"],
+["ADC","2 \u00d7 12-bit, up to 10 external channels"],["Timers","3 (TIM1 advanced, TIM2 and TIM3 general-purpose), plus watchdogs and SysTick"],
+["Communication","2 USART, 1 SPI, 1 I2C, USB 2.0 full-speed device, CAN 2.0B"],["DMA","7 channels"],["Clock","4 to 16 MHz crystal, internal 8 MHz RC, PLL, RTC"],
+["Low power","Sleep, Stop and Standby modes"],["Debug","SWD and JTAG"],["Temperature","\u221240 to +85 \u00b0C"]]);
+/* ---- 4 why / why not ---- */
+var Y=[["Low cost for small jobs","Usually one of the cheaper STM32F103 options. Enough for sensor reading, small control loops and simple displays."],
+["Real 32-bit power","72 MHz Cortex-M3 is far faster than 8-bit AVR boards like the Arduino Uno."],
+["Strong peripherals","Two 12-bit ADCs, an advanced PWM timer, USB and CAN on one small chip."],
+["Easy upgrade path","It shares the 48-pin LQFP footprint and design with the F103C8 and F103CB, so you can move to more memory with little change."],
+["Huge learning material","The F103 is one of the most documented STM32 chips, with many tutorials, libraries and examples."]];
+var N=[["Small memory","Only 32 KB Flash and 10 KB RAM. HAL code, display libraries or big buffers can fill it quickly."],
+["Fewer ports","One SPI, one I2C and two USARTs. The larger siblings have more."],
+["No DAC, no FPU","There is no built-in DAC, and floating-point math runs in software."],
+["USB and CAN conflict","They share memory, so they cannot be used at the same time."],
+["Older design","Newer lines (G0, G4, C0) may give more per cost. Check ST's product status for new designs, and buy from trusted suppliers because cloned chips exist."]];
+$("why").innerHTML=Y.map(function(r){return'<div class="card"><b>'+r[0]+'</b><p>'+r[1]+'</p></div>'}).join("")+N.map(function(r){return'<div class="card no"><b>Watch out: '+r[0]+'</b><p>'+r[1]+'</p></div>'}).join("");
+/* ---- 5 compare ---- */
+var V={C6:["F103C6",32,10,2,1,1,3],C8:["F103C8",64,20,3,2,2,4],CB:["F103CB",128,20,3,2,2,4]};
+var MX=[128,20,3,2,2,4],ML=["Flash (KB)","SRAM (KB)","USART","SPI","I2C","Timers"];
+$("bars").innerHTML=ML.map(function(l,i){return'<div class="bar"><span>'+l+'<b id="bv'+i+'"></b></span><div><i id="bf'+i+'"></i></div></div>'}).join("");
+function pickV(k){var v=V[k];for(var i=0;i<6;i++){$("bf"+i).style.width=(v[1+i]/MX[i]*100)+"%";$("bv"+i).textContent=v[1+i]}
+[].forEach.call($("vs").children,function(b){b.setAttribute("aria-pressed",b.dataset.k==k)})}
+Object.keys(V).forEach(function(k){var b=document.createElement("button");b.textContent="STM32"+V[k][0];b.dataset.k=k;b.setAttribute("aria-pressed","false");b.onclick=function(){pickV(k)};$("vs").appendChild(b)});
+pickV("C6");
+/* ---- 6 fit checker ---- */
+function fit(){var n=[+$("fk").value,+$("fr").value,+$("fu").value,+$("fs").value,+$("fi").value,+$("ft").value];
+$("kv").textContent=n[0];$("rv").textContent=n[1];var out="",first=null;
+["C6","C8","CB"].forEach(function(k){var v=V[k],why=[];
+ if(n[0]>v[1])why.push("needs "+n[0]+" KB Flash, has "+v[1]);if(n[1]>v[2])why.push("needs "+n[1]+" KB RAM, has "+v[2]);
+ if(n[2]>v[3])why.push("needs "+n[2]+" UARTs, has "+v[3]);if(n[3]>v[4])why.push("needs "+n[3]+" SPI, has "+v[4]);
+ if(n[4]>v[5])why.push("needs "+n[4]+" I2C, has "+v[5]);if(n[5]>v[6])why.push("needs "+n[5]+" timers, has "+v[6]);
+ var ok=!why.length;if(ok&&!first)first=v[0];
+ out+='<div class="r '+(ok?"ok":"no")+'"><b><span>STM32'+v[0]+'</span><span>'+(ok?"Fits":"Does not fit")+'</span></b><small>'+(ok?"All your needs are within its limits.":why.join("; "))+'</small></div>'});
+out+='<p style="margin:0"><b>'+(first?"Smallest option that fits: STM32"+first+".":"None of these fit. You need a larger STM32, for example a bigger F103 or another series.")+'</b></p>';
+$("res").innerHTML=out}
+["fk","fr","fu","fs","fi","ft"].forEach(function(i){$(i).oninput=$(i).onchange=fit});fit();
+/* ---- pause ---- */
+function setP(p){paused=p;$("pz").textContent=p?"Play animation":"Pause animation";p?$("s-chip").pauseAnimations():$("s-chip").unpauseAnimations();$("s-chip").querySelector(".core rect").style.animationPlayState=p?"paused":"running"}
+$("pz").onclick=function(){setP(!paused)};
+if(window.matchMedia&&matchMedia("(prefers-reduced-motion:reduce)").matches)setP(true);
+</script>
+</body>
+</html>
